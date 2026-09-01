@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YOUR TEA COMPANY — 全部關卡</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&family=Huninn&family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-night:#164943;
+    --bg-night-2:#ecd9ad;
+    --panel:#fdf6e6;
+    --panel-2:#f4e7c9;
+    --line:#d9c48f;
+    --peach:#dba53f;
+    --taro:#2c7d75;
+    --amber:#b5701c;
+    --mint:#3f8f5c;
+    --red:#b3452f;
+    --paper:#fffaf0;
+    --ink:#3c2415;
+    --text:#3c2415;
+    --dim:#8a6a48;
+    --font-display:'LXGW WenKai TC','Noto Sans TC',cursive;
+    --font-body:'Huninn','Noto Sans TC',sans-serif;
+    --font-mono:'Space Mono','Noto Sans TC',monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 8%, rgba(220,166,63,0.18), transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(0,0,0,0.20), transparent 45%),
+      linear-gradient(160deg, var(--taro) 0%, var(--bg-night) 100%);
+    font-family:var(--font-body);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 14px 60px;
+  }
+  .stage{width:100%;max-width:clamp(460px, 94vw, 960px);}
+  @media (min-width:720px){
+    body{padding:48px 24px;}
+    .screen{padding:36px 48px 40px;}
+    .price-grid{grid-template-columns:repeat(4,1fr);}
+    #screen-onboarding .btn-block{margin:18px auto 0;}
+    .dash-header,.path{max-width:520px;margin-left:auto;margin-right:auto;width:100%;}
+  }
+  @media (min-width:1080px){
+    .screen{padding:44px 64px 48px;}
+  }
+  .side-vine{
+    display:none;
+    position:absolute; top:0; bottom:0; width:130px;
+    pointer-events:none; z-index:-1; opacity:.4;
+  }
+  .side-vine.left{left:0;}
+  .side-vine.right{right:0; transform:scaleX(-1);}
+  .side-vine svg{width:100%;height:100%;}
+  @media (min-width:1080px){ .side-vine{display:block;} }
+  .shopfront{
+    background:linear-gradient(180deg, var(--panel) 0%, var(--bg-night-2) 100%);
+    border:1px solid var(--line);
+    border-radius:22px;
+    overflow:hidden;
+    box-shadow:0 30px 60px -20px rgba(10,30,25,0.55), 0 0 0 1px rgba(255,255,255,0.4) inset;
+    min-height:660px;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+  }
+  @media (min-width:720px){ .shopfront{min-height:720px;} }
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 18px;border-bottom:1px solid var(--line);
+    font-family:var(--font-mono);font-size:11px;letter-spacing:0.08em;color:var(--dim);
+  }
+  .topbar .dept-name{color:var(--amber);font-weight:700;}
+  .topbar-back{display:none;align-items:center;gap:4px;color:var(--text);cursor:pointer;font-weight:700;letter-spacing:0;font-family:var(--font-body);font-size:12.5px;transition:color .15s ease;}
+  .topbar-back:hover{color:var(--peach);}
+  .screen{display:none;flex-direction:column;flex:1;padding:26px 22px 30px;animation:fadeIn .4s ease;}
+  .screen.active{display:flex;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .neon{font-family:var(--font-display);font-weight:700;color:var(--amber);
+    text-shadow:0 3px 10px rgba(181,112,28,.25);letter-spacing:0.02em;}
+  .neon.taro{color:var(--taro);text-shadow:0 3px 10px rgba(44,125,117,.25);}
+  .neon.mint{color:var(--mint);text-shadow:0 3px 10px rgba(63,143,92,.25);}
+  .neon.red{color:var(--red);text-shadow:0 3px 10px rgba(179,69,47,.25);}
+  .neon.amber{color:var(--amber);text-shadow:0 3px 10px rgba(181,112,28,.25);}
+
+  .btn{font-family:var(--font-body);font-weight:700;font-size:clamp(17px, 0.8vw + 13px, 21px);border:none;border-radius:999px;padding:clamp(15px,.6vw+12px,18px) clamp(24px,1.2vw+18px,30px);cursor:pointer;position:relative;overflow:hidden;white-space:nowrap;transition:transform .15s ease, filter .15s ease;}
+  .btn::after{content:'';position:absolute;left:8%;top:12%;width:26%;height:32%;background:radial-gradient(ellipse at center, rgba(255,255,255,.85), rgba(255,255,255,0) 72%);border-radius:50%;transform:rotate(-20deg);pointer-events:none;}
+  .btn:active{transform:scale(.97);}
+  .btn[disabled]{opacity:.4;cursor:not-allowed;}
+  .btn-primary{background:linear-gradient(180deg,#ffdd9b 0%,var(--peach) 45%,#b5701c 100%);color:#3a2008;box-shadow:inset 0 2px 2px rgba(255,255,255,.6), inset 0 -9px 12px -5px rgba(90,50,10,.4), 0 10px 20px -8px rgba(193,122,30,.65);}
+  .btn-primary:hover{filter:brightness(1.05);}
+  .btn-ghost{background:linear-gradient(180deg,#fffdf6 0%,var(--panel-2) 55%,#e3cf9c 100%);color:var(--ink);border:1px solid var(--line);box-shadow:inset 0 2px 2px rgba(255,255,255,.7), inset 0 -7px 10px -5px rgba(60,36,21,.15), 0 8px 16px -8px rgba(60,36,21,.3);}
+  .btn-ghost:hover{filter:brightness(1.03);}
+  .btn-block{width:100%;max-width:300px;margin-left:auto;margin-right:auto;display:block;}
+  .btn-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;max-width:480px;margin-left:auto;margin-right:auto;}
+  .btn-row .btn-block{max-width:none;margin:0;flex:1 1 160px;}
+
+  input[type="text"],input[type="number"]{
+    width:100%;background:var(--bg-night-2);border:1.5px solid var(--line);color:var(--text);
+    font-family:var(--font-body);font-size:clamp(15px, 0.7vw + 12px, 18.5px);padding:clamp(12px,.5vw+10px,16px) clamp(13px,.5vw+11px,17px);border-radius:12px;outline:none;
+    transition:border-color .15s ease;
+  }
+  input:focus{border-color:var(--peach);}
+  input.ok{border-color:var(--mint);}
+  input.bad{border-color:var(--red);}
+  label.field-label{font-size:clamp(12px,.3vw+10.5px,14.5px);color:var(--dim);font-weight:700;letter-spacing:.06em;margin-bottom:6px;display:block;}
+  .field{margin-bottom:16px;}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+  .unit-suffix{font-size:12px;color:var(--dim);margin-top:4px;}
+
+  #screen-onboarding{align-items:stretch;justify-content:center;text-align:center;}
+  .cup-icon{font-size:44px;margin-bottom:6px;}
+  .brand-title{font-size:clamp(32px, 2.6vw + 20px, 52px);line-height:1.15;margin:4px 0 6px;}
+  .brand-sub{color:var(--dim);font-size:clamp(14px,.5vw+12px,17px);margin-bottom:28px;}
+  .form-card{background:var(--panel-2);border:1px solid var(--line);border-radius:16px;padding:20px;text-align:left;margin:0 auto 6px;max-width:420px;}
+
+  .dash-header{margin-bottom:22px;}
+  .dash-header .greet{font-size:12px;color:var(--dim);font-family:var(--font-mono);}
+  .dash-header .company{font-size:clamp(24px, 2vw + 16px, 38px);font-weight:700;font-family:var(--font-display);color:var(--ink);margin-top:2px;}
+  .path{position:relative;display:flex;flex-direction:column;gap:0;margin-top:10px;}
+  .node{display:flex;align-items:center;gap:14px;padding:14px 4px;position:relative;cursor:pointer;}
+  .node:not(:last-child)::after{content:'';position:absolute;left:23px;top:52px;width:2px;height:34px;background:var(--line);}
+  .node.done:not(:last-child)::after{background:var(--mint);}
+  .node-bubble{width:clamp(46px,2.5vw+34px,58px);height:clamp(46px,2.5vw+34px,58px);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:clamp(20px,1vw+15px,25px);flex-shrink:0;border:1.5px solid var(--line);background:var(--panel);}
+  .node.active .node-bubble{border-color:var(--peach);box-shadow:0 0 0 4px rgba(219,165,63,.18),0 0 18px rgba(219,165,63,.35);animation:pulse 1.8s ease-in-out infinite;}
+  .node.done .node-bubble{border-color:var(--mint);background:rgba(63,143,92,.14);}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 4px rgba(219,165,63,.18),0 0 14px rgba(219,165,63,.3);}50%{box-shadow:0 0 0 7px rgba(219,165,63,.1),0 0 24px rgba(219,165,63,.45);}}
+  .node-info{flex:1;}
+  .node-title{font-weight:700;font-size:clamp(15px,.5vw+13px,18.5px);color:var(--ink);}
+  .node.locked .node-title{color:var(--dim);}
+  .node-sub{font-size:clamp(13.5px,.4vw+11.5px,16px);color:var(--dim);margin-top:1px;}
+
+  .chat-scroll{flex:1;display:flex;flex-direction:column;gap:12px;}
+  .chat-row{display:flex;align-items:flex-end;gap:8px;}
+  .avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--taro),#164943);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fdf6e6;}
+  .bubble-col{display:flex;flex-direction:column;gap:4px;max-width:82%;}
+  .sender{font-size:11px;color:var(--dim);margin-left:2px;}
+  .bubble{background:var(--panel-2);border:1px solid var(--line);border-radius:4px 14px 14px 14px;padding:clamp(11px,.4vw+9px,15px) clamp(13px,.4vw+11px,17px);font-size:clamp(14.5px,.5vw+12px,17.5px);line-height:1.5;}
+  .receipt{background:var(--paper);color:var(--ink);font-family:var(--font-mono);font-size:clamp(13.5px,.5vw+11.5px,17px);padding:14px 14px 16px;border-radius:2px;box-shadow:0 10px 20px -8px rgba(20,10,0,.35);position:relative;width:fit-content;max-width:78%;}
+  .receipt::before{content:'';position:absolute;top:-7px;left:14px;width:22px;height:14px;background:rgba(219,165,63,.55);transform:rotate(-4deg);border-radius:2px;}
+  .receipt .r-title{font-weight:700;border-bottom:1px dashed var(--ink);padding-bottom:6px;margin-bottom:6px;letter-spacing:.03em;}
+  .receipt .r-ratio{font-size:clamp(16px,.7vw+13px,21px);font-weight:700;}
+  .tilt-l{transform:rotate(-2.2deg);}
+  .tilt-r{transform:rotate(2deg);}
+
+  .choice-row{display:flex;flex-direction:column;gap:10px;margin-top:6px;margin-left:40px;max-width:520px;}
+  .choice-btn{width:50%;background:linear-gradient(180deg,#fffdf6 0%,var(--panel) 55%,#f0e0b3 100%);border:2px solid var(--peach);color:var(--ink);text-align:left;display:flex;align-items:center;gap:16px;padding:clamp(32px,1.4vw+28px,44px) clamp(20px,.8vw+17px,26px);border-radius:999px;font-size:clamp(20px,1vw+17px,27px);font-weight:700;cursor:pointer;position:relative;overflow:hidden;box-shadow:inset 0 2px 2px rgba(255,255,255,.7), inset 0 -6px 10px -5px rgba(60,36,21,.12), 0 8px 16px -8px rgba(60,36,21,.3);transition:border-color .15s ease, transform .15s ease, background .15s ease;}
+  .choice-btn::after{content:'';position:absolute;left:6%;top:14%;width:16%;height:36%;background:radial-gradient(ellipse at center, rgba(255,255,255,.9), rgba(255,255,255,0) 72%);border-radius:50%;transform:rotate(-20deg);pointer-events:none;}
+  .choice-btn:hover{border-color:var(--taro);transform:translateX(3px);}
+  .choice-btn .cb-badge{
+    width:clamp(34px,1.4vw+28px,44px);height:clamp(34px,1.4vw+28px,44px);border-radius:50%;
+    background:linear-gradient(180deg,#ffdd9b,#b5701c);color:#3a2008;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:inset 0 1px 1px rgba(255,255,255,.6), inset 0 -3px 5px -2px rgba(90,50,10,.4);
+    font-family:var(--font-mono);font-weight:700;font-size:clamp(16px,.6vw+13.5px,20px);
+  }
+  .continue-wrap{margin-left:40px;margin-top:4px;}
+
+  .center-card{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;}
+  .badge{font-size:clamp(52px, 3vw + 36px, 76px);}
+  .result-title{font-size:clamp(30px, 2.4vw + 20px, 42px);font-family:var(--font-display);font-weight:700;}
+  .result-body{color:var(--dim);font-size:clamp(14px,.5vw+12px,17.5px);line-height:1.6;max-width:clamp(340px, 40vw, 480px);}
+  .explain-card{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,.8vw+13px,22px);text-align:left;font-size:clamp(13.5px,.5vw+11.5px,17px);line-height:1.65;color:var(--text);max-width:clamp(360px, 42vw, 500px);margin-top:4px;}
+  .explain-card b{color:var(--amber);}
+
+  .puzzle-wrap,.calc-wrap,.chat-scroll,.center-card,#screen-customratio .calc-wrap,#screen-finalinputs .calc-wrap{max-width:640px;margin-left:auto;margin-right:auto;width:100%;}
+  .puzzle-wrap{display:flex;flex-direction:column;gap:16px;flex:1;}
+  .puzzle-story{font-size:clamp(13.5px,.5vw+11.5px,17px);color:var(--dim);line-height:1.6;}
+  .ratio-card{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:16px;}
+  .ratio-card .label{font-size:clamp(12px,.3vw+10.5px,14.5px);color:var(--dim);font-weight:700;margin-bottom:8px;letter-spacing:.04em;}
+  .ratio-line{display:flex;align-items:center;justify-content:center;gap:8px;font-family:var(--font-mono);font-size:clamp(20px,1.2vw+15px,29px);font-weight:700;margin-bottom:12px;}
+  .ratio-line .term{background:var(--bg-night-2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:44px;text-align:center;color:var(--ink);}
+  .ratio-line .term.shared{border-color:var(--amber);color:var(--amber);}
+  .ratio-line .colon{color:var(--dim);}
+  .stepper-row{display:flex;align-items:center;justify-content:center;gap:14px;}
+  .stepper-label{font-size:12.5px;color:var(--dim);}
+  .stepper{display:flex;align-items:center;gap:10px;background:var(--bg-night-2);border:1px solid var(--line);border-radius:12px;padding:6px 10px;}
+  .stepper button{width:28px;height:28px;border-radius:8px;border:none;background:var(--panel);color:var(--ink);font-size:16px;font-weight:700;cursor:pointer;}
+  .stepper button:active{transform:scale(.9);}
+  .stepper .m-val{font-family:var(--font-mono);font-weight:700;font-size:16px;width:20px;text-align:center;color:var(--ink);}
+  .match-indicator{text-align:center;font-size:13.5px;font-weight:700;padding:10px;border-radius:10px;background:rgba(60,36,21,.035);border:1px dashed var(--line);color:var(--dim);transition:all .2s ease;}
+  .match-indicator.ok{background:rgba(63,143,92,.12);border-color:var(--mint);color:var(--mint);}
+  .combined-preview{display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--amber);opacity:0;transition:opacity .3s ease;}
+  .combined-preview.show{opacity:1;}
+
+  .skip-link{text-align:center;font-size:12px;color:var(--dim);margin-top:14px;cursor:pointer;text-decoration:underline;}
+  .node.locked, .node.done{cursor:pointer;}
+  .toast{position:absolute;left:50%;bottom:18px;transform:translateX(-50%) translateY(10px);background:var(--panel-2);border:1px solid var(--line);color:var(--text);font-size:13px;padding:10px 16px;border-radius:12px;box-shadow:0 10px 24px -8px rgba(20,10,0,.45);opacity:0;pointer-events:none;transition:all .25s ease;z-index:20;white-space:nowrap;max-width:88%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* calc wizard */
+  .calc-wrap{display:flex;flex-direction:column;gap:16px;flex:1;}
+  .calc-progress{font-family:var(--font-mono);font-size:clamp(11px,.2vw+10px,13.5px);color:var(--dim);text-align:center;letter-spacing:.08em;}
+  .calc-recap{background:var(--bg-night-2);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;}
+  .recap-label{font-size:11px;color:var(--dim);font-weight:700;margin-bottom:6px;letter-spacing:.04em;}
+  .recap-chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .recap-chip{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:clamp(5px,.2vw+4px,7px) clamp(10px,.4vw+8px,14px);font-size:clamp(12.5px,.4vw+11px,15px);color:var(--ink);}
+  .recap-chip b{font-family:var(--font-mono);color:var(--amber);}
+  .calc-prompt{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:clamp(16px,.8vw+13px,22px);font-size:clamp(14.5px,.5vw+12.5px,18px);line-height:1.6;}
+  .calc-fields{display:flex;flex-direction:column;gap:12px;}
+  .calc-field{display:flex;align-items:center;gap:10px;}
+  .calc-field label{flex:0 0 auto;font-size:clamp(13.5px,.4vw+11.5px,16px);color:var(--text);min-width:74px;}
+  .calc-field input{flex:1;max-width:240px;padding-top:clamp(20px,1vw+16px,26px);padding-bottom:clamp(20px,1vw+16px,26px);}
+  .calc-field .u{font-size:12.5px;color:var(--dim);width:26px;}
+  .calc-feedback{text-align:center;font-size:13px;font-weight:700;min-height:18px;}
+  .calc-feedback.ok{color:var(--mint);}
+  .calc-feedback.bad{color:var(--red);}
+  .hint-toggle{
+    align-self:flex-start; display:inline-flex; align-items:center; gap:6px;
+    font-size:clamp(12.5px,.4vw+11px,15px); color:var(--taro); font-weight:700;
+    cursor:pointer; text-decoration:underline; text-underline-offset:2px;
+  }
+  .hint-text{
+    display:none; background:var(--bg-night-2); border:1px dashed var(--line);
+    border-radius:10px; padding:10px 14px; font-family:var(--font-mono);
+    font-size:clamp(13px,.4vw+11.5px,15.5px); color:var(--ink);
+  }
+  .hint-text.show{display:block;}
+
+  .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.1;margin:0 3px;font-size:0.82em;position:relative;top:0.08em;}
+  .frac .fn{padding:0 4px 2px;border-bottom:1.4px solid currentColor;}
+  .frac .fd{padding:2px 4px 0;}
+
+  /* price picker */
+  .price-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .price-card{background:var(--panel-2);border:1.5px solid var(--line);border-radius:14px;padding:14px;text-align:center;cursor:pointer;transition:all .15s ease;}
+  .price-card:hover{border-color:var(--taro);}
+  .price-card.selected{border-color:var(--peach);box-shadow:0 0 0 3px rgba(219,165,63,.18);}
+  .price-card.invalid{opacity:.55;}
+  .price-card .p-val{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--amber);}
+  .price-card .p-stats{font-size:11px;color:var(--dim);margin-top:6px;line-height:1.5;}
+  .price-card .p-warn{font-size:11px;color:var(--red);font-weight:700;margin-top:4px;}
+
+  /* ad layout */
+  .ad-preview-wrap{display:flex;justify-content:center;margin:6px 0;}
+  .ad-canvas{width:150px;height:187px;border:1.5px solid var(--line);border-radius:6px;overflow:hidden;display:flex;flex-direction:column;background:var(--bg-night-2);}
+  .ad-band{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fffaf0;text-shadow:0 1px 3px rgba(0,0,0,.35);}
+  .ad-band.drink{background:linear-gradient(135deg,var(--peach),#c17a1e);}
+  .ad-band.logo{background:var(--taro);}
+  .ad-band.textzone{background:var(--mint);}
+  .ad-sum-note{text-align:center;font-size:12px;color:var(--dim);}
+
+  /* final plan doc */
+  .plan-doc{background:var(--paper);color:var(--ink);border-radius:10px;padding:20px;font-family:var(--font-body);box-shadow:0 14px 30px -10px rgba(20,10,0,.35);}
+  .plan-doc .p-brand{font-family:var(--font-display);font-weight:700;font-size:28px;margin-bottom:2px;}
+  .plan-doc .p-drink{font-size:15px;font-weight:700;color:#8a4b1f;margin-bottom:12px;}
+  .plan-doc .p-row{display:flex;justify-content:space-between;font-size:13.5px;padding:6px 0;border-bottom:1px dashed rgba(58,42,28,.3);}
+  .plan-doc .p-row b{font-family:var(--font-mono);}
+  .plan-doc .p-slogan{margin-top:12px;font-size:13.5px;font-style:italic;text-align:center;color:#5c3d20;}
+
+  /* teacher dashboard */
+  .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;}
+  .stat-box{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;}
+  .stat-box .s-num{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--amber);}
+  .stat-box .s-label{font-size:10.5px;color:var(--dim);margin-top:2px;}
+  .student-card{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+  .student-card .s-name{font-weight:700;font-size:15px;color:var(--ink);}
+  .student-card .s-meta{font-size:11.5px;color:var(--dim);margin-bottom:8px;}
+  .student-track{display:flex;gap:6px;margin-bottom:8px;}
+  .student-track .t-dot{flex:1;height:8px;border-radius:4px;background:var(--bg-night-2);border:1px solid var(--line);}
+  .student-track .t-dot.done{background:var(--mint);border-color:var(--mint);}
+  .student-track .t-dot.current{background:var(--peach);border-color:var(--peach);}
+  .student-flags{display:flex;flex-wrap:wrap;gap:6px;}
+  .s-flag{font-size:11px;padding:3px 9px;border-radius:999px;background:var(--bg-night-2);border:1px solid var(--line);color:var(--dim);}
+  .s-flag.warn{background:rgba(179,69,47,.12);border-color:var(--red);color:var(--red);}
+  .s-flag.good{background:rgba(63,143,92,.12);border-color:var(--mint);color:var(--mint);}
+  .empty-note{text-align:center;color:var(--dim);font-size:13.5px;padding:30px 10px;}
+
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="shopfront">
+
+    <div class="side-vine left" aria-hidden="true">
+      <svg viewBox="0 0 130 800" preserveAspectRatio="xMidYMid slice">
+        <path d="M40 0 C10 80 70 160 30 240 C-10 320 60 400 25 480 C-5 550 55 620 35 700 C20 750 45 780 40 800"
+          style="fill:none;stroke:var(--taro);stroke-width:3;stroke-linecap:round;"/>
+        <g style="fill:var(--taro);">
+          <ellipse cx="18" cy="90" rx="20" ry="10" transform="rotate(-35 18 90)"/>
+          <ellipse cx="62" cy="150" rx="20" ry="10" transform="rotate(35 62 150)"/>
+          <ellipse cx="8" cy="270" rx="20" ry="10" transform="rotate(-35 8 270)"/>
+          <ellipse cx="55" cy="330" rx="20" ry="10" transform="rotate(35 55 330)"/>
+          <ellipse cx="0" cy="450" rx="20" ry="10" transform="rotate(-35 0 450)"/>
+          <ellipse cx="50" cy="510" rx="20" ry="10" transform="rotate(35 50 510)"/>
+          <ellipse cx="10" cy="630" rx="20" ry="10" transform="rotate(-35 10 630)"/>
+          <ellipse cx="55" cy="690" rx="20" ry="10" transform="rotate(35 55 690)"/>
+        </g>
+        <g style="fill:var(--peach);">
+          <circle cx="40" cy="55" r="8"/>
+          <circle cx="58" cy="65" r="6"/>
+          <circle cx="24" cy="65" r="6"/>
+          <circle cx="40" cy="72" r="7"/>
+        </g>
+        <g style="fill:var(--mint);">
+          <circle cx="35" cy="565" r="7"/>
+          <circle cx="50" cy="572" r="5"/>
+          <circle cx="22" cy="572" r="5"/>
+        </g>
+      </svg>
+    </div>
+    <div class="side-vine right" aria-hidden="true">
+      <svg viewBox="0 0 130 800" preserveAspectRatio="xMidYMid slice">
+        <path d="M40 0 C10 80 70 160 30 240 C-10 320 60 400 25 480 C-5 550 55 620 35 700 C20 750 45 780 40 800"
+          style="fill:none;stroke:var(--taro);stroke-width:3;stroke-linecap:round;"/>
+        <g style="fill:var(--taro);">
+          <ellipse cx="18" cy="90" rx="20" ry="10" transform="rotate(-35 18 90)"/>
+          <ellipse cx="62" cy="150" rx="20" ry="10" transform="rotate(35 62 150)"/>
+          <ellipse cx="8" cy="270" rx="20" ry="10" transform="rotate(-35 8 270)"/>
+          <ellipse cx="55" cy="330" rx="20" ry="10" transform="rotate(35 55 330)"/>
+          <ellipse cx="0" cy="450" rx="20" ry="10" transform="rotate(-35 0 450)"/>
+          <ellipse cx="50" cy="510" rx="20" ry="10" transform="rotate(35 50 510)"/>
+          <ellipse cx="10" cy="630" rx="20" ry="10" transform="rotate(-35 10 630)"/>
+          <ellipse cx="55" cy="690" rx="20" ry="10" transform="rotate(35 55 690)"/>
+        </g>
+        <g style="fill:var(--amber);">
+          <circle cx="40" cy="55" r="8"/>
+          <circle cx="58" cy="65" r="6"/>
+          <circle cx="24" cy="65" r="6"/>
+          <circle cx="40" cy="72" r="7"/>
+        </g>
+        <g style="fill:var(--mint);">
+          <circle cx="35" cy="565" r="7"/>
+          <circle cx="50" cy="572" r="5"/>
+          <circle cx="22" cy="572" r="5"/>
+        </g>
+      </svg>
+    </div>
+
+    <div class="topbar">
+      <span id="topbar-back" class="topbar-back" onclick="backToDashboard()">← 辦公桌</span>
+      <span id="topbar-left">YOUR TEA COMPANY</span>
+      <span id="topbar-right" class="dept-name">建店中…</span>
+    </div>
+
+    <!-- ONBOARDING -->
+    <section class="screen active" id="screen-onboarding">
+      <div style="margin-top:26px;">
+        <div style="width:72px;height:72px;border-radius:50%;margin:0 auto 14px;background:radial-gradient(circle at 35% 30%, var(--peach), #c17a1e);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:30px;color:#2c1a08;box-shadow:0 10px 20px -6px rgba(219,165,63,.5);">茶</div>
+        <div class="neon brand-title">YOUR TEA<br>COMPANY</div>
+        <div class="brand-sub">你能打造下一杯爆紅手搖飲嗎？</div>
+      </div>
+      <div class="form-card">
+        <div class="field">
+          <label class="field-label">公司名稱</label>
+          <input type="text" id="input-company" placeholder="例如：MOOCHA">
+        </div>
+        <div class="field" style="margin-bottom:4px;">
+          <label class="field-label">總監姓名</label>
+          <input type="text" id="input-director" placeholder="你的名字">
+        </div>
+      </div>
+      <button class="btn btn-primary btn-block" style="margin-top:18px;" onclick="startCompany()">開始創業 →</button>
+      <div class="skip-link" onclick="showTeacherLogin()">🔑 教師登入</div>
+    </section>
+
+    <!-- TEACHER LOGIN -->
+    <section class="screen" id="screen-teacher-login">
+      <div class="center-card">
+        <div class="badge">🔑</div>
+        <div class="neon result-title">教師模式</div>
+        <div class="result-body">輸入密碼查看全班學生的作答情況與分析</div>
+        <div class="form-card" style="width:100%;">
+          <div class="field" style="margin-bottom:4px;">
+            <label class="field-label">密碼</label>
+            <input type="text" id="teacher-password" placeholder="••••••" onkeydown="if(event.key==='Enter')teacherLogin()">
+          </div>
+        </div>
+        <div class="calc-feedback bad" id="teacher-login-error"></div>
+        <div class="btn-row" style="width:100%;">
+          <button class="btn btn-ghost btn-block" onclick="show('screen-onboarding')">返回</button>
+          <button class="btn btn-primary btn-block" onclick="teacherLogin()">登入 →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEACHER DASHBOARD -->
+    <section class="screen" id="screen-teacher-dashboard">
+      <div class="calc-wrap">
+        <div class="dash-header" style="margin-bottom:6px;">
+          <div class="greet">教師後台 · 學生作答分析</div>
+          <div class="company">全班總覽</div>
+        </div>
+        <div id="teacher-summary"></div>
+        <div id="teacher-student-list"></div>
+        <div class="btn-row">
+          <button class="btn btn-ghost btn-block" onclick="loadTeacherData()">🔄 重新整理</button>
+          <button class="btn btn-ghost btn-block" onclick="show('screen-onboarding')">登出</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="screen" id="screen-dashboard">
+      <div class="dash-header">
+        <div class="greet">辦公桌 · Dashboard</div>
+        <div class="company" id="dash-company-name">MOOCHA</div>
+        <div class="skip-link" style="margin-top:6px;" onclick="resetName()">✏️ 重設名稱</div>
+      </div>
+      <div class="path" id="dash-path"></div>
+      <div class="skip-link" onclick="restartDemo()">🔄 重新體驗（全部關卡重來）</div>
+    </section>
+    <div class="toast" id="toast"></div>
+
+    <!-- GENERIC CHAT -->
+    <section class="screen" id="screen-chat">
+      <div class="chat-scroll" id="chat-scroll"></div>
+    </section>
+
+    <!-- MISSION 1 FAIL / CORRECT branch -->
+    <section class="screen" id="screen-m1-fail">
+      <div class="center-card">
+        <div class="badge">🧋</div>
+        <div class="neon red result-title">試做失敗！</div>
+        <div class="explain-card">
+          綠茶在第一張配方代表 <b>3 份</b>，第二張配方裡卻代表 <b>2 份</b>。<br><br>
+          兩個不同大小的「一份」，真的可以直接接起來嗎？在合併之前，要先讓兩張配方裡的「綠茶」變成<b>同樣大小的一份</b>。
+        </div>
+        <button class="btn btn-primary" style="margin-top:6px;" onclick="goSolveMission1()">重新調配配方 →</button>
+      </div>
+    </section>
+    <section class="screen" id="screen-m1-correct">
+      <div class="center-card">
+        <div class="badge">👀</div>
+        <div class="neon mint result-title">你發現問題了！</div>
+        <div class="explain-card">
+          沒錯——兩張配方裡的「綠茶」份量基準不一樣，不能直接把 <b>2:3</b> 和 <b>2:3</b> 黏在一起變成 <b>2:3:3</b>。<br><br>
+          我們得先把兩張配方裡的「綠茶」，調整成<b>同樣大小的一份</b>。
+        </div>
+        <button class="btn btn-primary" style="margin-top:6px;" onclick="goSolveMission1()">開始調配 →</button>
+      </div>
+    </section>
+
+    <!-- GENERIC PUZZLE (連比例引擎，M1 + M5 共用) -->
+    <section class="screen" id="screen-puzzle">
+      <div class="puzzle-wrap" id="puzzle-container"></div>
+    </section>
+
+    <!-- GENERIC CALC WIZARD (M2 / M3 / M4 共用) -->
+    <section class="screen" id="screen-calc">
+      <div class="calc-wrap" id="calc-container"></div>
+    </section>
+
+    <!-- MISSION 3 price picker -->
+    <section class="screen" id="screen-price">
+      <div class="calc-wrap">
+        <div class="calc-prompt">
+          總部規定：原料成本不得超過售價的 <b>40%</b>。<br>
+          單杯成本 $35，理論上最低售價要 87.5 元，但現實不會標這種價格。<br>
+          幫總監選一個實際售價：
+        </div>
+        <div class="price-grid" id="price-grid"></div>
+        <div class="ad-sum-note" id="price-note">點選一個符合成本規則（≤40%）的價格</div>
+        <button class="btn btn-primary btn-block" id="price-confirm" disabled onclick="confirmPrice()">確認定價 →</button>
+      </div>
+    </section>
+
+    <!-- MISSION 4 ad layout -->
+    <section class="screen" id="screen-adlayout">
+      <div class="calc-wrap">
+        <div class="calc-prompt">
+          廣告版面尺寸 <b>1080 × 1350 px</b>。飲料主視覺占版面高度的 <span class="frac"><span class="fn">3</span><span class="fd">5</span></span>，Logo 占 <span class="frac"><span class="fn">1</span><span class="fd">5</span></span>，文字區占 <span class="frac"><span class="fn">1</span><span class="fd">5</span></span>。<br>
+          請算出三個區塊各是幾 px 高。
+        </div>
+        <div class="calc-fields">
+          <div class="calc-field"><label>飲料主視覺</label><input type="number" id="ad-drink" oninput="updateAdPreview()"><span class="u">px</span></div>
+          <div class="calc-field"><label>Logo 區域</label><input type="number" id="ad-logo" oninput="updateAdPreview()"><span class="u">px</span></div>
+          <div class="calc-field"><label>文字區域</label><input type="number" id="ad-text" oninput="updateAdPreview()"><span class="u">px</span></div>
+        </div>
+        <div class="ad-preview-wrap">
+          <div class="ad-canvas" id="ad-canvas">
+            <div class="ad-band drink" id="ad-band-drink" style="height:33%;">飲料</div>
+            <div class="ad-band logo" id="ad-band-logo" style="height:33%;">Logo</div>
+            <div class="ad-band textzone" id="ad-band-text" style="height:34%;">文字</div>
+          </div>
+        </div>
+        <div class="ad-sum-note" id="ad-sum-note">目前加總：0 px（版面總高應為 1350 px）</div>
+        <div class="calc-feedback" id="ad-feedback"></div>
+        <button class="btn btn-primary btn-block" id="ad-confirm" disabled onclick="confirmAdLayout()">產出廣告版位 →</button>
+      </div>
+    </section>
+
+    <!-- MISSION 5 custom ratio input -->
+    <section class="screen" id="screen-customratio">
+      <div class="calc-wrap">
+        <div class="calc-prompt">
+          現在，請創造一杯屬於你自己的招牌飲料。<br>
+          決定三種原料，並分別寫出兩張配方紙（像 Mission 01 一樣，不能直接給完整三連比）。
+        </div>
+        <div class="field">
+          <label class="field-label">招牌飲料名稱</label>
+          <input type="text" id="cr-drinkname" placeholder="例如：夕陽蜜桃烏龍">
+        </div>
+        <div class="ratio-card">
+          <div class="label">配方紙 ①</div>
+          <div class="field-row">
+            <div class="field"><label class="field-label">原料 A</label><input type="text" id="cr-a-name" placeholder="例如：蜜桃"></div>
+            <div class="field" style="max-width:70px;"><label class="field-label">份量</label><input type="number" id="cr-a-val" value="2"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label class="field-label">原料 B（共同項）</label><input type="text" id="cr-b-name" placeholder="例如：烏龍"></div>
+            <div class="field" style="max-width:70px;"><label class="field-label">份量</label><input type="number" id="cr-b-val1" value="5"></div>
+          </div>
+        </div>
+        <div class="ratio-card">
+          <div class="label">配方紙 ②</div>
+          <div class="field-row">
+            <div class="field"><label class="field-label">原料 B（同上）</label><input type="text" id="cr-b-name2" placeholder="要跟上面一樣"></div>
+            <div class="field" style="max-width:70px;"><label class="field-label">份量</label><input type="number" id="cr-b-val2" value="3"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label class="field-label">原料 C</label><input type="text" id="cr-c-name" placeholder="例如：氣泡水"></div>
+            <div class="field" style="max-width:70px;"><label class="field-label">份量</label><input type="number" id="cr-c-val" value="4"></div>
+          </div>
+        </div>
+        <div class="calc-feedback bad" id="cr-error"></div>
+        <button class="btn btn-primary btn-block" onclick="generateCustomPuzzle()">生成配方謎題 →</button>
+      </div>
+    </section>
+
+    <!-- MISSION 5 pricing + slogan -->
+    <section class="screen" id="screen-finalinputs">
+      <div class="calc-wrap">
+        <div class="calc-prompt">黃金連比找到了！現在幫這杯飲料決定售價與成本，並寫一句 Slogan。</div>
+        <div class="calc-fields">
+          <div class="calc-field"><label>售價</label><input type="number" id="fi-price" oninput="updateFinalProfit()"><span class="u">$</span></div>
+          <div class="calc-field"><label>成本</label><input type="number" id="fi-cost" oninput="updateFinalProfit()"><span class="u">$</span></div>
+        </div>
+        <div class="ad-sum-note" id="fi-profit">毛利：—</div>
+        <div class="field">
+          <label class="field-label">Slogan</label>
+          <input type="text" id="fi-slogan" placeholder="例如：把夏天，喝進夕陽裡。">
+        </div>
+        <button class="btn btn-primary btn-block" onclick="generatePlanDoc()">產生新品企劃書 →</button>
+      </div>
+    </section>
+
+    <!-- MISSION 5 final plan doc -->
+    <section class="screen" id="screen-finalplan">
+      <div class="calc-wrap">
+        <div class="plan-doc" id="plan-doc-content"></div>
+        <button class="btn btn-primary btn-block" onclick="finishMission5()">完成新品發表會 🎉</button>
+      </div>
+    </section>
+
+    <!-- GENERIC SUCCESS SCREEN -->
+    <section class="screen" id="screen-success">
+      <div class="center-card" id="success-content"></div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   STATE
+============================================================ */
+const state = {
+  company:'MOOCHA', director:'',
+  missions:{m1:false, m2:false, m3:false, m4:false, m5:false},
+  chosenPrice:null,
+  custom:null, // {drinkName, items, combinedText, values}
+  sessionId:null,
+};
+
+const DEPARTMENTS = [
+  {key:'m1', title:'研發部', sub:'連比例 — 找出飲料配方', icon:'🧪', start:startMission1},
+  {key:'m2', title:'調飲實驗室', sub:'比例、比例式', icon:'🧋', start:startMission2},
+  {key:'m3', title:'財務部', sub:'百分率、比例', icon:'💰', start:startMission3},
+  {key:'m4', title:'行銷部', sub:'比例、版面尺寸', icon:'📣', start:startMission4},
+  {key:'m5', title:'新品發表會', sub:'綜合應用', icon:'🎤', start:startMission5},
+];
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const isHome = (id==='screen-onboarding' || id==='screen-dashboard' || id==='screen-teacher-login' || id==='screen-teacher-dashboard');
+  document.getElementById('topbar-back').style.display = isHome ? 'none' : 'flex';
+  document.getElementById('topbar-left').style.display = isHome ? 'inline' : 'none';
+}
+function backToDashboard(){
+  show('screen-dashboard');
+  setTopbar('辦公桌');
+}
+function resetName(){
+  document.getElementById('input-company').value = state.company==='MOOCHA' ? '' : state.company;
+  document.getElementById('input-director').value = state.director==='總監' ? '' : state.director;
+  show('screen-onboarding');
+}
+function setTopbar(right){ document.getElementById('topbar-right').textContent = right; }
+let toastTimer=null;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+/* ============================================================
+   ONBOARDING
+============================================================ */
+function startCompany(){
+  const c=document.getElementById('input-company').value.trim();
+  const d=document.getElementById('input-director').value.trim();
+  state.company = c||'MOOCHA';
+  state.director = d||'總監';
+  if(!state.sessionId){
+    state.sessionId = 'stu_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    state.record = {
+      sessionId: state.sessionId, company: state.company, director: state.director,
+      startedAt: Date.now(), updatedAt: Date.now(),
+      missions:{m1:{done:false},m2:{done:false},m3:{done:false},m4:{done:false},m5:{done:false}},
+      m1FirstChoiceCorrect:null, m3InvalidPriceClicks:0,
+    };
+  } else {
+    state.record.company = state.company; state.record.director = state.director;
+  }
+  saveSharedRecord();
+  renderDashboard();
+  show('screen-dashboard');
+  setTopbar('辦公桌');
+  saveProgress();
+}
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+function renderDashboard(){
+  document.getElementById('dash-company-name').textContent = state.company;
+  const path=document.getElementById('dash-path');
+  path.innerHTML='';
+  DEPARTMENTS.forEach((d,i)=>{
+    const done = state.missions[d.key];
+    const prevDone = i===0 ? true : state.missions[DEPARTMENTS[i-1].key];
+    const active = !done && prevDone;
+    const locked = !done && !prevDone;
+    const node=document.createElement('div');
+    node.className='node '+(done?'done ':'')+(active?'active ':'')+(locked?'locked':'');
+    node.innerHTML=`
+      <div class="node-bubble">${done?'✅':(locked?'🔒':d.icon)}</div>
+      <div class="node-info">
+        <div class="node-title">${String(i+1).padStart(2,'0')} · ${d.title}</div>
+        <div class="node-sub">${locked?'完成前一關即可解鎖':d.sub}</div>
+      </div>`;
+    if(active){
+      node.onclick=()=>{ setTopbar(d.title); d.start(); };
+    } else if(done){
+      node.onclick=()=> showToast(`✅ ${d.title}已完成，隨時可以回來複習！`);
+    } else {
+      node.onclick=()=> showToast(`🔒 ${d.title}要先完成前一關才能解鎖`);
+    }
+    path.appendChild(node);
+  });
+}
+function completeMission(key, nextLabel){
+  state.missions[key]=true;
+  renderDashboard();
+  saveProgress();
+  if(state.record){
+    state.record.missions[key] = { done:true, completedAt: Date.now(), startedAt: (state.record.missions[key]&&state.record.missions[key].startedAt)||Date.now() };
+    saveSharedRecord();
+  }
+}
+function markMissionStarted(key){
+  if(state.record && !state.record.missions[key].startedAt){
+    state.record.missions[key].startedAt = Date.now();
+    saveSharedRecord();
+  }
+}
+function restartDemo(){
+  state.missions={m1:false,m2:false,m3:false,m4:false,m5:false};
+  renderDashboard();
+  showToast('已重設，所有部門可以重新挑戰！');
+  saveProgress();
+}
+
+/* ============================================================
+   SAVE / RESTORE (persists across reloads)
+============================================================ */
+async function saveSharedRecord(){
+  if(!state.record) return;
+  state.record.updatedAt = Date.now();
+  try{
+    await window.storage.set('student:'+state.sessionId, JSON.stringify(state.record), true);
+  }catch(e){ /* storage unavailable, fail silently */ }
+}
+
+/* ============================================================
+   TEACHER MODE
+============================================================ */
+function showTeacherLogin(){
+  document.getElementById('teacher-password').value='';
+  document.getElementById('teacher-login-error').textContent='';
+  show('screen-teacher-login');
+}
+function teacherLogin(){
+  const pw = document.getElementById('teacher-password').value;
+  if(pw==='55555'){
+    show('screen-teacher-dashboard');
+    loadTeacherData();
+  } else {
+    document.getElementById('teacher-login-error').textContent='密碼不正確';
+  }
+}
+const MISSION_ORDER=['m1','m2','m3','m4','m5'];
+const MISSION_LABELS={m1:'研發部',m2:'調飲實驗室',m3:'財務部',m4:'行銷部',m5:'新品發表會'};
+function fmtTime(ts){
+  if(!ts) return '—';
+  const d=new Date(ts);
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+async function loadTeacherData(){
+  const listEl=document.getElementById('teacher-student-list');
+  const sumEl=document.getElementById('teacher-summary');
+  listEl.innerHTML = `<div class="empty-note">載入中…</div>`;
+  sumEl.innerHTML='';
+  let keys=[];
+  try{
+    const res = await window.storage.list('student:', true);
+    keys = (res && res.keys) || [];
+  }catch(e){
+    listEl.innerHTML = `<div class="empty-note">目前無法讀取學生資料</div>`;
+    return;
+  }
+  if(!keys.length){
+    listEl.innerHTML = `<div class="empty-note">目前還沒有學生開始玩</div>`;
+    return;
+  }
+  const records=[];
+  for(const k of keys){
+    try{
+      const r = await window.storage.get(k, true);
+      if(r && r.value){ records.push(JSON.parse(r.value)); }
+    }catch(e){ /* skip unreadable entry */ }
+  }
+  records.sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
+
+  // summary stats
+  const total = records.length;
+  const missionDoneCounts = {m1:0,m2:0,m3:0,m4:0,m5:0};
+  let m1CorrectCount=0, m1AnsweredCount=0, invalidPriceTotal=0;
+  records.forEach(r=>{
+    MISSION_ORDER.forEach(m=>{ if(r.missions && r.missions[m] && r.missions[m].done) missionDoneCounts[m]++; });
+    if(r.m1FirstChoiceCorrect!==null && r.m1FirstChoiceCorrect!==undefined){ m1AnsweredCount++; if(r.m1FirstChoiceCorrect) m1CorrectCount++; }
+    invalidPriceTotal += r.m3InvalidPriceClicks||0;
+  });
+  const m5DonePct = total? Math.round(missionDoneCounts.m5/total*100) : 0;
+  const m1CorrectPct = m1AnsweredCount? Math.round(m1CorrectCount/m1AnsweredCount*100) : 0;
+
+  sumEl.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-box"><div class="s-num">${total}</div><div class="s-label">學生人數</div></div>
+      <div class="stat-box"><div class="s-num">${m5DonePct}%</div><div class="s-label">全部完成</div></div>
+      <div class="stat-box"><div class="s-num">${m1CorrectPct}%</div><div class="s-label">M1 一次答對</div></div>
+    </div>
+    <div class="stat-grid" style="grid-template-columns:repeat(5,1fr);">
+      ${MISSION_ORDER.map(m=>`<div class="stat-box"><div class="s-num">${missionDoneCounts[m]}</div><div class="s-label">${MISSION_LABELS[m]}</div></div>`).join('')}
+    </div>
+  `;
+
+  listEl.innerHTML = records.map(r=>{
+    const currentIdx = MISSION_ORDER.findIndex(m=> !(r.missions && r.missions[m] && r.missions[m].done));
+    const dots = MISSION_ORDER.map((m,i)=>{
+      const done = r.missions && r.missions[m] && r.missions[m].done;
+      const isCurrent = i===currentIdx;
+      return `<div class="t-dot ${done?'done':''} ${isCurrent&&!done?'current':''}" title="${MISSION_LABELS[m]}"></div>`;
+    }).join('');
+    const flags=[];
+    if(r.m1FirstChoiceCorrect===false) flags.push(`<span class="s-flag warn">M1 第一次選錯</span>`);
+    if(r.m1FirstChoiceCorrect===true) flags.push(`<span class="s-flag good">M1 一次答對</span>`);
+    if((r.m3InvalidPriceClicks||0)>0) flags.push(`<span class="s-flag warn">M3 選錯定價 ${r.m3InvalidPriceClicks} 次</span>`);
+    const allDone = currentIdx===-1;
+    if(allDone) flags.push(`<span class="s-flag good">🏆 全部完成</span>`);
+    return `
+      <div class="student-card">
+        <div class="s-name">${r.company||'—'} <span style="font-weight:400;color:var(--dim);">／ ${r.director||'—'}</span></div>
+        <div class="s-meta">開始 ${fmtTime(r.startedAt)}　最後活動 ${fmtTime(r.updatedAt)}</div>
+        <div class="student-track">${dots}</div>
+        <div class="student-flags">${flags.join('') || `<span class="s-flag">進行中</span>`}</div>
+      </div>`;
+  }).join('');
+}
+async function saveProgress(){
+  try{
+    await window.storage.set('progress', JSON.stringify({
+      company: state.company, director: state.director, missions: state.missions
+    }));
+  }catch(e){ /* storage unavailable, fail silently */ }
+}
+async function loadProgress(){
+  try{
+    const res = await window.storage.get('progress');
+    if(res && res.value){
+      const data = JSON.parse(res.value);
+      if(data.company) state.company = data.company;
+      if(data.director) state.director = data.director;
+      if(data.missions) state.missions = data.missions;
+      return true;
+    }
+  }catch(e){ /* no saved progress yet */ }
+  return false;
+}
+(async function initApp(){
+  const hasSave = await loadProgress();
+  if(hasSave){
+    renderDashboard();
+    show('screen-dashboard');
+    setTopbar('辦公桌');
+  }
+})();
+
+/* ============================================================
+   GENERIC CHAT ENGINE
+   msgs: [{text}] or [{receipt:{title,ratio,tilt}}]
+   last item: {choices:[{label,onClick}]} OR {continueLabel,onClick}
+============================================================ */
+function playChat(msgs){
+  show('screen-chat');
+  const scroll=document.getElementById('chat-scroll');
+  scroll.innerHTML='';
+  let delay=0;
+  msgs.forEach((m)=>{
+    setTimeout(()=>appendChatItem(m), delay);
+    delay += m.receipt ? 350 : 500;
+  });
+}
+function appendChatItem(m){
+  const scroll=document.getElementById('chat-scroll');
+  if(m.text){
+    const row=document.createElement('div');
+    row.className='chat-row';
+    row.innerHTML=`
+      <div class="avatar">V</div>
+      <div class="bubble-col">
+        <div class="sender">總經理 Valerie</div>
+        <div class="bubble">${m.text}</div>
+      </div>`;
+    scroll.appendChild(row);
+  }
+  if(m.receipt){
+    const wrap=document.createElement('div');
+    wrap.style.marginLeft='40px';
+    wrap.innerHTML=`<div class="receipt tilt-${m.receipt.tilt}"><div class="r-title">${m.receipt.title}</div><div class="r-ratio">${m.receipt.ratio}</div></div>`;
+    scroll.appendChild(wrap);
+  }
+  if(m.choices){
+    const row=document.createElement('div');
+    row.className='choice-row';
+    row.innerHTML = m.choices.map((c,i)=>`<button class="choice-btn" onclick="window.__chatChoice(${i})"><span class="cb-badge">${String.fromCharCode(65+i)}</span>${c.label}</button>`).join('');
+    window.__chatChoice = (i)=> m.choices[i].onClick();
+    scroll.appendChild(row);
+  }
+  if(m.continueLabel){
+    const row=document.createElement('div');
+    row.className='continue-wrap';
+    row.innerHTML=`<button class="btn btn-primary" onclick="window.__chatContinue()">${m.continueLabel}</button>`;
+    window.__chatContinue = m.onClick;
+    scroll.appendChild(row);
+  }
+  scroll.scrollIntoView({behavior:'smooth', block:'end'});
+}
+
+/* ============================================================
+   MISSION 1 — 研發部（連比例）
+============================================================ */
+function startMission1(){
+  markMissionStarted('m1');
+  playChat([
+    {text:`${state.director}總監，不好了！研發部留下的配方好像有問題。`},
+    {receipt:{title:'配方便條 ①', ratio:'紅茶 : 綠茶 = 2 : 3', tilt:'l'}},
+    {receipt:{title:'配方便條 ②', ratio:'綠茶 : 麥茶 = 2 : 3', tilt:'r'}},
+    {text:'實習生直接把它寫成 紅茶:綠茶:麥茶 = 2:3:3 了……'},
+    {text:'你覺得，可以直接開始生產嗎？',
+     choices:[
+       {label:'可以，先開始生產', onClick:()=>{ recordM1Choice(false); show('screen-m1-fail'); }},
+       {label:'等等，好像有問題', onClick:()=>{ recordM1Choice(true); show('screen-m1-correct'); }},
+     ]},
+  ]);
+}
+function recordM1Choice(correct){
+  if(state.record && state.record.m1FirstChoiceCorrect===null){
+    state.record.m1FirstChoiceCorrect = correct;
+    saveSharedRecord();
+  }
+}
+function goSolveMission1(){
+  loadPuzzle(PUZZLES.main, ()=>{
+    showSuccess({
+      icon:'✨', title:'黃金連比找到了！', titleClass:'',
+      ratioLabel:'紅茶 : 綠茶 : 麥茶', ratioValue:'4 : 6 : 9',
+      body:'研發部任務完成！接下來要把配方交給調飲實驗室，準備放大量產。',
+      primaryLabel:'前往調飲實驗室 →',
+      primaryAction:()=>{ completeMission('m1'); show('screen-dashboard'); setTopbar('辦公桌'); startMission2(); },
+      secondaryLabel:'先回辦公桌',
+      secondaryAction:()=>{ completeMission('m1'); show('screen-dashboard'); setTopbar('辦公桌'); },
+    });
+  });
+}
+
+/* ============================================================
+   GENERIC RATIO PUZZLE ENGINE (連比例)
+============================================================ */
+const PUZZLES = {
+  main:{
+    story:'兩張配方紙裡都有「綠茶」，但代表的份量不一樣大。調整倍數，讓兩邊的綠茶變成同一個大小，就能安全地把配方接起來。',
+    ratioA:{items:['紅茶','綠茶'], vals:[2,3], sharedIndex:1},
+    ratioB:{items:['綠茶','麥茶'], vals:[2,3], sharedIndex:0},
+    finalOrder:['紅茶','綠茶','麥茶'],
+  },
+};
+let currentPuzzle=null, mA=1, mB=1, onPuzzleSolved=null;
+
+function loadPuzzle(cfg, onSolved){
+  currentPuzzle=cfg; onPuzzleSolved=onSolved; mA=1; mB=1;
+  show('screen-puzzle');
+  renderPuzzle();
+}
+function renderPuzzle(){
+  const cfg=currentPuzzle, c=document.getElementById('puzzle-container');
+  const A=cfg.ratioA, B=cfg.ratioB;
+  const sharedName=A.items[A.sharedIndex];
+  const aVal0=A.vals[0]*mA, aVal1=A.vals[1]*mA;
+  const bVal0=B.vals[0]*mB, bVal1=B.vals[1]*mB;
+  const sharedFromA=A.vals[A.sharedIndex]*mA, sharedFromB=B.vals[B.sharedIndex]*mB;
+  const matched = sharedFromA===sharedFromB;
+  function termHtml(val, idx, side){
+    const isShared = side==='A'? idx===A.sharedIndex : idx===B.sharedIndex;
+    return `<span class="term ${isShared?'shared':''}">${val}</span>`;
+  }
+  let combinedHtml='';
+  if(matched){
+    const values={};
+    A.items.forEach((n,i)=>{ values[n]=A.vals[i]*mA; });
+    B.items.forEach((n,i)=>{ values[n]=B.vals[i]*mB; });
+    combinedHtml = cfg.finalOrder.map(n=>values[n]).join(' : ');
+  }
+  c.innerHTML = `
+    <div class="puzzle-story">${cfg.story}</div>
+    <div class="ratio-card">
+      <div class="label">${A.items[0]} : ${A.items[1]}</div>
+      <div class="ratio-line">${termHtml(aVal0,0,'A')}<span class="colon">:</span>${termHtml(aVal1,1,'A')}</div>
+      <div class="stepper-row"><span class="stepper-label">放大倍數</span>
+        <div class="stepper"><button onclick="changeMult('A',-1)">−</button><span class="m-val">×${mA}</span><button onclick="changeMult('A',1)">+</button></div>
+      </div>
+    </div>
+    <div class="ratio-card">
+      <div class="label">${B.items[0]} : ${B.items[1]}</div>
+      <div class="ratio-line">${termHtml(bVal0,0,'B')}<span class="colon">:</span>${termHtml(bVal1,1,'B')}</div>
+      <div class="stepper-row"><span class="stepper-label">放大倍數</span>
+        <div class="stepper"><button onclick="changeMult('B',-1)">−</button><span class="m-val">×${mB}</span><button onclick="changeMult('B',1)">+</button></div>
+      </div>
+    </div>
+    <div class="match-indicator ${matched?'ok':''}">共同項「${sharedName}」— A 邊 = ${sharedFromA}　B 邊 = ${sharedFromB}${matched?'　✓ 一樣大了！':''}</div>
+    <div class="combined-preview ${matched?'show':''}">${combinedHtml}</div>
+    <button class="btn btn-primary btn-block" ${matched?'':'disabled'} onclick="confirmPuzzle()">鎖定黃金連比 →</button>
+  `;
+}
+function changeMult(side, delta){
+  if(side==='A'){ mA=Math.min(9,Math.max(1,mA+delta)); } else { mB=Math.min(9,Math.max(1,mB+delta)); }
+  renderPuzzle();
+}
+function confirmPuzzle(){
+  const A=currentPuzzle.ratioA, B=currentPuzzle.ratioB;
+  const matched=(A.vals[A.sharedIndex]*mA)===(B.vals[B.sharedIndex]*mB);
+  if(!matched) return;
+  if(onPuzzleSolved) onPuzzleSolved();
+}
+
+/* ============================================================
+   GENERIC SUCCESS SCREEN
+============================================================ */
+function showSuccess(cfg){
+  show('screen-success');
+  const el=document.getElementById('success-content');
+  el.innerHTML = `
+    <div class="badge">${cfg.icon}</div>
+    <div class="neon ${cfg.titleClass||''} result-title">${cfg.title}</div>
+    ${cfg.ratioLabel ? `
+    <div class="ratio-card" style="margin-top:4px;">
+      <div class="label">${cfg.ratioLabel}</div>
+      <div class="ratio-line" style="margin-bottom:0;">${cfg.ratioValue.split(':').map(v=>`<span class="term">${v.trim()}</span>`).join('<span class="colon">:</span>')}</div>
+    </div>` : ''}
+    ${cfg.extraHtml||''}
+    <div class="result-body">${cfg.body}</div>
+    <div class="btn-row" style="width:100%;">
+      ${cfg.secondaryLabel? `<button class="btn btn-ghost btn-block" id="succ-secondary">${cfg.secondaryLabel}</button>`:''}
+      <button class="btn btn-primary btn-block" id="succ-primary">${cfg.primaryLabel}</button>
+    </div>
+  `;
+  document.getElementById('succ-primary').onclick = cfg.primaryAction;
+  if(cfg.secondaryLabel){ document.getElementById('succ-secondary').onclick = cfg.secondaryAction; }
+}
+
+/* ============================================================
+   GENERIC CALC WIZARD (M2 amounts / M2 emergency / M4 uses its own screen)
+   steps: [{prompt, fields:[{label,id,expected,tol,unit}]}]
+============================================================ */
+let calcSteps=[], calcIndex=0, calcOnDone=null, calcGiven=[], calcHistory=[];
+function clearCalcHistory(){ calcHistory=[]; }
+function loadCalcWizard(steps, onDone, given){
+  calcSteps=steps; calcIndex=0; calcOnDone=onDone; calcGiven=given||[];
+  show('screen-calc');
+  renderCalcStep();
+}
+function renderCalcStep(){
+  const step=calcSteps[calcIndex];
+  const c=document.getElementById('calc-container');
+  const recapItems=[...calcGiven, ...calcHistory];
+  const recapHtml = recapItems.length ? `
+    <div class="calc-recap">
+      <div class="recap-label">📌 已知資訊</div>
+      <div class="recap-chips">
+        ${recapItems.map(it=>`<span class="recap-chip">${it.label} <b>${it.value}${it.unit||''}</b></span>`).join('')}
+      </div>
+    </div>` : '';
+  c.innerHTML = `
+    <div class="calc-progress">STEP ${calcIndex+1} / ${calcSteps.length}</div>
+    ${recapHtml}
+    <div class="calc-prompt">${step.prompt}</div>
+    ${step.hint ? `
+      <div class="hint-toggle" id="hint-btn" onclick="toggleHint()">💡 需要提示嗎？</div>
+      <div class="hint-text" id="hint-text">${step.hint}</div>
+    ` : ''}
+    <div class="calc-fields">
+      ${step.fields.map(f=>`
+        <div class="calc-field">
+          <label>${f.label}</label>
+          <input type="number" id="calc-${f.id}" oninput="checkCalcStep()">
+          <span class="u">${f.unit||''}</span>
+        </div>`).join('')}
+    </div>
+    <div class="calc-feedback" id="calc-feedback"></div>
+    <button class="btn btn-primary btn-block" id="calc-next" disabled onclick="advanceCalcStep()">
+      ${calcIndex===calcSteps.length-1 ? '完成 →' : '下一步 →'}
+    </button>
+  `;
+}
+function toggleHint(){
+  const t=document.getElementById('hint-text');
+  const btn=document.getElementById('hint-btn');
+  const showing = t.classList.contains('show');
+  t.classList.toggle('show', !showing);
+  btn.textContent = showing ? '💡 需要提示嗎？' : '🙈 隱藏提示';
+}
+function checkCalcStep(){
+  const step=calcSteps[calcIndex];
+  let allOk=true;
+  step.fields.forEach(f=>{
+    const input=document.getElementById('calc-'+f.id);
+    const v=parseFloat(input.value);
+    const tol = f.tol!==undefined ? f.tol : 0.5;
+    const ok = !isNaN(v) && Math.abs(v-f.expected)<=tol;
+    input.classList.remove('ok','bad');
+    if(input.value!==''){ input.classList.add(ok?'ok':'bad'); }
+    if(!ok) allOk=false;
+  });
+  document.getElementById('calc-next').disabled = !allOk;
+  document.getElementById('calc-feedback').className='calc-feedback '+(allOk?'ok':'');
+  document.getElementById('calc-feedback').textContent = allOk ? '✓ 答對了！' : '';
+}
+function advanceCalcStep(){
+  const step=calcSteps[calcIndex];
+  step.fields.forEach(f=>{
+    calcHistory.push({label:f.label, value:f.expected, unit:f.unit?(' '+f.unit):''});
+  });
+  calcIndex++;
+  if(calcIndex<calcSteps.length){ renderCalcStep(); }
+  else { if(calcOnDone) calcOnDone(); }
+}
+
+/* ============================================================
+   MISSION 2 — 調飲實驗室
+============================================================ */
+function startMission2(){
+  markMissionStarted('m2');
+  clearCalcHistory();
+  playChat([
+    {text:'研發成功後，總部通知：夢幻三色茶試喝大成功，明天總公司需要 200 杯！'},
+    {receipt:{title:'已知配方比例', ratio:'紅茶:綠茶:麥茶 = 4:6:9', tilt:'l'}},
+    {text:'假設每杯茶基底共 380 mL，一杯需要多少紅茶、綠茶、麥茶？先算出總份數與每份多少 mL。',
+     continueLabel:'開始計算 →',
+     onClick:()=>{
+       loadCalcWizard([
+         { prompt:'紅茶:綠茶:麥茶 = 4:6:9，總共分成幾份？', fields:[{label:'總份數', id:'m2-parts', expected:19, tol:0.1}] },
+         { prompt:'每杯基底共 380 mL，那麼每一份是多少 mL？', hint:'380 ÷ 總份數', fields:[{label:'每份', id:'m2-perpart', expected:20, tol:0.1, unit:'mL'}] },
+         { prompt:'那麼一杯需要的紅茶、綠茶、麥茶各是多少 mL？', fields:[
+            {label:'紅茶', id:'m2-red', expected:80, tol:1, unit:'mL'},
+            {label:'綠茶', id:'m2-green', expected:120, tol:1, unit:'mL'},
+            {label:'麥茶', id:'m2-malt', expected:180, tol:1, unit:'mL'},
+         ]},
+       ], onMission2Step1Done, [{label:'配方比例', value:'4:6:9'},{label:'每杯基底', value:'380', unit:' mL'}]);
+     }},
+  ]);
+}
+function onMission2Step1Done(){
+  playChat([
+    {text:'🚨 緊急訂單：總公司明天需要 200 杯！請算出今天到底需要準備多少「公升」的紅茶、綠茶、麥茶。',
+     continueLabel:'開始換算 →',
+     onClick:()=>{
+       loadCalcWizard([
+         { prompt:'一杯紅茶 80 mL，200 杯共需要多少「公升」的紅茶？', hint:'先算出總 mL，再換算成 L（1 L = 1000 mL）', fields:[{label:'紅茶', id:'m2-red-l', expected:16, tol:0.2, unit:'L'}] },
+         { prompt:'一杯綠茶 120 mL，200 杯共需要多少公升的綠茶？', fields:[{label:'綠茶', id:'m2-green-l', expected:24, tol:0.2, unit:'L'}] },
+         { prompt:'一杯麥茶 180 mL，200 杯共需要多少公升的麥茶？', fields:[{label:'麥茶', id:'m2-malt-l', expected:36, tol:0.2, unit:'L'}] },
+       ], onMission2Done, [{label:'訂單', value:'200 杯'}]);
+     }},
+  ]);
+}
+function onMission2Done(){
+  showSuccess({
+    icon:'🧋', title:'量產配方確定！',
+    ratioLabel:'200 杯總需求（公升）', ratioValue:'紅16 : 綠24 : 麥36',
+    body:'調飲實驗室任務完成！接下來財務部要幫這杯飲料算成本和定價。',
+    primaryLabel:'前往財務部 →',
+    primaryAction:()=>{ completeMission('m2'); show('screen-dashboard'); setTopbar('辦公桌'); startMission3(); },
+    secondaryLabel:'先回辦公桌',
+    secondaryAction:()=>{ completeMission('m2'); show('screen-dashboard'); setTopbar('辦公桌'); },
+  });
+}
+
+/* ============================================================
+   MISSION 3 — 財務部
+============================================================ */
+const M3_PRICE_OPTIONS=[85,89,90,95];
+function startMission3(){
+  markMissionStarted('m3');
+  clearCalcHistory();
+  playChat([
+    {text:'財務長來訊：「這樣賣會倒店！」我們得先把單杯成本、定價規則算清楚。'},
+    {receipt:{title:'單杯成本明細', ratio:'茶葉8＋鮮奶12＋糖漿3＋杯具5＋珍珠7', tilt:'l'}},
+    {text:'總部規定：原料成本不得超過售價的 40%。先把成本加總，再算出理論上的最低售價。',
+     continueLabel:'開始計算 →',
+     onClick:()=>{
+       loadCalcWizard([
+         { prompt:'茶葉 $8、鮮奶 $12、糖漿 $3、杯子+吸管 $5、珍珠 $7，單杯成本共多少？', fields:[{label:'單杯成本', id:'m3-cost', expected:35, tol:0.1, unit:'$'}] },
+         { prompt:'若成本不得超過售價的 40%，且成本 = 35 元，理論上最低售價 P 應該是多少？', hint:'35 = 40% × P', fields:[{label:'售價 P', id:'m3-price', expected:87.5, tol:1, unit:'$'}] },
+       ], onMission3StepDone, [{label:'成本明細', value:'8+12+3+5+7'},{label:'成本上限', value:'40%'}]);
+     }},
+  ]);
+}
+function onMission3StepDone(){
+  show('screen-price');
+  state.chosenPrice=null;
+  renderPriceGrid();
+}
+function renderPriceGrid(){
+  const grid=document.getElementById('price-grid');
+  grid.innerHTML='';
+  M3_PRICE_OPTIONS.forEach(p=>{
+    const rate = 35/p;
+    const valid = rate<=0.40;
+    const profit = p-35;
+    const card=document.createElement('div');
+    card.className='price-card '+(state.chosenPrice===p?'selected':'')+(valid?'':' invalid');
+    card.innerHTML = `
+      <div class="p-val">$${p}</div>
+      <div class="p-stats">成本率 ${(rate*100).toFixed(1)}%<br>單杯毛利 $${profit}<br>200杯毛利 $${profit*200}</div>
+      ${valid?'':'<div class="p-warn">超出 40% 上限</div>'}
+    `;
+    card.onclick=()=>{
+      if(!valid){
+        showToast('這個價格成本率超過 40%，總部不會核准喔');
+        if(state.record){ state.record.m3InvalidPriceClicks=(state.record.m3InvalidPriceClicks||0)+1; saveSharedRecord(); }
+        return;
+      }
+      state.chosenPrice=p;
+      renderPriceGrid();
+      document.getElementById('price-confirm').disabled=false;
+      document.getElementById('price-note').textContent = `已選 $${p}，成本率 ${(rate*100).toFixed(1)}%，符合規則 ✓`;
+    };
+    grid.appendChild(card);
+  });
+}
+function confirmPrice(){
+  if(!state.chosenPrice) return;
+  const p=state.chosenPrice, profit=p-35;
+  showSuccess({
+    icon:'💰', title:'定價確定！',
+    extraHtml:`<div class="ratio-card"><div class="label">最終定價</div><div class="ratio-line" style="margin-bottom:0;"><span class="term">$${p}</span></div></div>`,
+    body:`單杯毛利 $${profit}，200 杯共 $${profit*200}。財務部任務完成！接下來輪到行銷部設計廣告。`,
+    primaryLabel:'前往行銷部 →',
+    primaryAction:()=>{ completeMission('m3'); show('screen-dashboard'); setTopbar('辦公桌'); startMission4(); },
+    secondaryLabel:'先回辦公桌',
+    secondaryAction:()=>{ completeMission('m3'); show('screen-dashboard'); setTopbar('辦公桌'); },
+  });
+}
+
+/* ============================================================
+   MISSION 4 — 行銷部
+============================================================ */
+function startMission4(){
+  markMissionStarted('m4');
+  playChat([
+    {text:'行銷總監上線：該幫「夢幻三色漸層茶」設計廣告了！廣告尺寸固定 1080 × 1350 px。'},
+    {text:'飲料主視覺要占版面高度的 <span class="frac"><span class="fn">3</span><span class="fd">5</span></span>，Logo 占 <span class="frac"><span class="fn">1</span><span class="fd">5</span></span>，文字區占 <span class="frac"><span class="fn">1</span><span class="fd">5</span></span>。設計前要先把版面配置算出來。',
+     continueLabel:'開始配置版面 →',
+     onClick:()=> { show('screen-adlayout'); resetAdLayout(); }},
+  ]);
+}
+function resetAdLayout(){
+  ['ad-drink','ad-logo','ad-text'].forEach(id=>{ document.getElementById(id).value=''; document.getElementById(id).classList.remove('ok','bad'); });
+  updateAdPreview();
+}
+function updateAdPreview(){
+  const drink=parseFloat(document.getElementById('ad-drink').value)||0;
+  const logo=parseFloat(document.getElementById('ad-logo').value)||0;
+  const text=parseFloat(document.getElementById('ad-text').value)||0;
+  const total=drink+logo+text;
+  const safe = total>0 ? total : 1;
+  document.getElementById('ad-band-drink').style.height = (drink/safe*100)+'%';
+  document.getElementById('ad-band-logo').style.height = (logo/safe*100)+'%';
+  document.getElementById('ad-band-text').style.height = (text/safe*100)+'%';
+  document.getElementById('ad-sum-note').textContent = `目前加總：${total} px（版面總高應為 1350 px）`;
+
+  const okDrink = Math.abs(drink-810)<=10;
+  const okLogo = Math.abs(logo-270)<=10;
+  const okText = Math.abs(text-270)<=10;
+  const allOk = okDrink && okLogo && okText;
+  document.getElementById('ad-drink').classList.toggle('ok', drink>0 && okDrink);
+  document.getElementById('ad-drink').classList.toggle('bad', drink>0 && !okDrink);
+  document.getElementById('ad-logo').classList.toggle('ok', logo>0 && okLogo);
+  document.getElementById('ad-logo').classList.toggle('bad', logo>0 && !okLogo);
+  document.getElementById('ad-text').classList.toggle('ok', text>0 && okText);
+  document.getElementById('ad-text').classList.toggle('bad', text>0 && !okText);
+  document.getElementById('ad-feedback').className='calc-feedback '+(allOk?'ok':'');
+  document.getElementById('ad-feedback').textContent = allOk ? '✓ 版面配置正確！' : '';
+  document.getElementById('ad-confirm').disabled = !allOk;
+}
+function confirmAdLayout(){
+  showSuccess({
+    icon:'📣', title:'廣告版位完成！',
+    extraHtml:`<div class="ratio-card"><div class="label">版面配置（px）</div><div class="ratio-line" style="margin-bottom:0;"><span class="term">810</span><span class="colon">:</span><span class="term">270</span><span class="colon">:</span><span class="term">270</span></div></div>`,
+    body:'接下來可以用 Canva 或 AI 圖像工具，依照這個版面配置完成真正的廣告文宣。行銷部任務完成，準備進入新品發表會！',
+    primaryLabel:'前往新品發表會 →',
+    primaryAction:()=>{ completeMission('m4'); show('screen-dashboard'); setTopbar('辦公桌'); startMission5(); },
+    secondaryLabel:'先回辦公桌',
+    secondaryAction:()=>{ completeMission('m4'); show('screen-dashboard'); setTopbar('辦公桌'); },
+  });
+}
+
+/* ============================================================
+   MISSION 5 — 新品發表會（綜合應用）
+============================================================ */
+function startMission5(){
+  markMissionStarted('m5');
+  playChat([
+    {text:'現在，請創造一杯屬於你自己的招牌飲料。這是研發部訓練的綜合應用——你要自己出題、自己解題。'},
+    {text:'決定三種原料，寫出兩張配方紙（像 Mission 01 一樣，共同項份量不能一樣大），我會幫你生成互動謎題。',
+     continueLabel:'開始設計配方 →',
+     onClick:()=>{ show('screen-customratio'); document.getElementById('cr-error').textContent=''; }},
+  ]);
+}
+function generateCustomPuzzle(){
+  const drinkName=document.getElementById('cr-drinkname').value.trim()||'招牌飲料';
+  const aName=document.getElementById('cr-a-name').value.trim();
+  const aVal=parseFloat(document.getElementById('cr-a-val').value);
+  const bName1=document.getElementById('cr-b-name').value.trim();
+  const bVal1=parseFloat(document.getElementById('cr-b-val1').value);
+  const bName2=document.getElementById('cr-b-name2').value.trim();
+  const bVal2=parseFloat(document.getElementById('cr-b-val2').value);
+  const cName=document.getElementById('cr-c-name').value.trim();
+  const cVal=parseFloat(document.getElementById('cr-c-val').value);
+
+  const err=document.getElementById('cr-error');
+  if(!aName||!bName1||!bName2||!cName||isNaN(aVal)||isNaN(bVal1)||isNaN(bVal2)||isNaN(cVal)||aVal<=0||bVal1<=0||bVal2<=0||cVal<=0){
+    err.textContent='請把所有原料名稱與份量都填完整（份量需大於 0）'; return;
+  }
+  if(bName1!==bName2){
+    err.textContent='配方紙①與②的「共同項」原料名稱要一致，才能找出共同基準'; return;
+  }
+  err.textContent='';
+  state.custom = { drinkName };
+  loadPuzzle({
+    story:`兩張配方紙裡都有「${bName1}」，先找出讓它變成同樣大小的倍數，再把配方接起來。`,
+    ratioA:{items:[aName,bName1], vals:[aVal,bVal1], sharedIndex:1},
+    ratioB:{items:[bName2,cName], vals:[bVal2,cVal], sharedIndex:0},
+    finalOrder:[aName,bName1,cName],
+  }, onCustomPuzzleSolved);
+}
+function onCustomPuzzleSolved(){
+  // capture the solved ratio text for the final plan
+  const A=currentPuzzle.ratioA, B=currentPuzzle.ratioB;
+  const values={};
+  A.items.forEach((n,i)=>{ values[n]=A.vals[i]*mA; });
+  B.items.forEach((n,i)=>{ values[n]=B.vals[i]*mB; });
+  state.custom.ratioLabel = currentPuzzle.finalOrder.join(' : ');
+  state.custom.ratioValue = currentPuzzle.finalOrder.map(n=>values[n]).join(' : ');
+  document.getElementById('fi-price').value='';
+  document.getElementById('fi-cost').value='';
+  document.getElementById('fi-slogan').value='';
+  document.getElementById('fi-profit').textContent='毛利：—';
+  show('screen-finalinputs');
+}
+function updateFinalProfit(){
+  const price=parseFloat(document.getElementById('fi-price').value);
+  const cost=parseFloat(document.getElementById('fi-cost').value);
+  if(!isNaN(price) && !isNaN(cost)){
+    document.getElementById('fi-profit').textContent = `毛利：$${(price-cost).toFixed(1)}`;
+  } else {
+    document.getElementById('fi-profit').textContent='毛利：—';
+  }
+}
+function generatePlanDoc(){
+  const price=parseFloat(document.getElementById('fi-price').value);
+  const cost=parseFloat(document.getElementById('fi-cost').value);
+  const slogan=document.getElementById('fi-slogan').value.trim();
+  if(isNaN(price)||isNaN(cost)){ showToast('請先填寫售價與成本'); return; }
+  const c=state.custom;
+  const doc=document.getElementById('plan-doc-content');
+  doc.innerHTML = `
+    <div class="p-brand">${state.company}</div>
+    <div class="p-drink">招牌飲料：${c.drinkName}</div>
+    <div class="p-row"><span>黃金連比（${c.ratioLabel}）</span><b>${c.ratioValue}</b></div>
+    <div class="p-row"><span>售價</span><b>$${price}</b></div>
+    <div class="p-row"><span>成本</span><b>$${cost}</b></div>
+    <div class="p-row"><span>毛利</span><b>$${(price-cost).toFixed(1)}</b></div>
+    ${slogan?`<div class="p-slogan">「${slogan}」</div>`:''}
+  `;
+  show('screen-finalplan');
+}
+function finishMission5(){
+  completeMission('m5');
+  showSuccess({
+    icon:'🏆', title:'新品發表會成功！', titleClass:'mint',
+    body:`${state.company} 的整個新品開發流程完成了——從連比例配方、量產換算、成本定價、廣告版面，到最後自己出題解題。這就是一趟完整的「數學創業模擬」！`,
+    primaryLabel:'回到辦公桌',
+    primaryAction:()=>{ show('screen-dashboard'); setTopbar('辦公桌'); },
+  });
+}
+</script>
+</body>
+</html>

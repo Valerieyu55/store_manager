@@ -226,6 +226,10 @@
     font-size:clamp(13px,.4vw+11.5px,15.5px); color:var(--ink);
   }
   .hint-text.show{display:block;}
+  .teacher-answer{
+    background:rgba(63,143,92,.12); border:1.5px dashed var(--mint); border-radius:10px;
+    padding:10px 14px; font-size:clamp(13px,.4vw+11.5px,15.5px); color:var(--mint); font-weight:700;
+  }
 
   .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;line-height:1.1;margin:0 3px;font-size:0.82em;position:relative;top:0.08em;}
   .frac .fn{padding:0 4px 2px;border-bottom:1.4px solid currentColor;}
@@ -275,6 +279,16 @@
   .s-flag.warn{background:rgba(179,69,47,.12);border-color:var(--red);color:var(--red);}
   .s-flag.good{background:rgba(63,143,92,.12);border-color:var(--mint);color:var(--mint);}
   .empty-note{text-align:center;color:var(--dim);font-size:13.5px;padding:30px 10px;}
+  .jump-panel{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:18px;}
+  .jump-label{font-size:12.5px;color:var(--dim);font-weight:700;margin-bottom:10px;}
+  .jump-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;}
+  .jump-btn{
+    background:var(--panel);border:1.5px solid var(--peach);border-radius:12px;
+    padding:10px 8px;text-align:center;cursor:pointer;font-size:13.5px;font-weight:700;color:var(--ink);
+    transition:transform .15s ease, border-color .15s ease;
+  }
+  .jump-btn:hover{border-color:var(--taro);transform:translateY(-2px);}
+  .jump-btn .jb-icon{font-size:20px;display:block;margin-bottom:4px;}
 
 </style>
 </head>
@@ -352,14 +366,19 @@
       </div>
       <div class="form-card">
         <div class="field">
+          <label class="field-label">學生本名</label>
+          <input type="text" id="input-name" placeholder="請填寫真實姓名">
+        </div>
+        <div class="field">
           <label class="field-label">公司名稱</label>
           <input type="text" id="input-company" placeholder="例如：MOOCHA">
         </div>
         <div class="field" style="margin-bottom:4px;">
           <label class="field-label">總監姓名</label>
-          <input type="text" id="input-director" placeholder="你的名字">
+          <input type="text" id="input-director" placeholder="你的總監角色名">
         </div>
       </div>
+      <div class="calc-feedback bad" id="name-error"></div>
       <button class="btn btn-primary btn-block" style="margin-top:18px;" onclick="startCompany()">開始創業 →</button>
       <div class="skip-link" onclick="showTeacherLogin()">🔑 教師登入</div>
     </section>
@@ -391,6 +410,10 @@
           <div class="greet">教師後台 · 學生作答分析</div>
           <div class="company">全班總覽</div>
         </div>
+        <div class="jump-panel">
+          <div class="jump-label">🚀 快速跳關（預覽題目內容，不影響學生資料）</div>
+          <div class="jump-grid" id="jump-grid"></div>
+        </div>
         <div id="teacher-summary"></div>
         <div id="teacher-student-list"></div>
         <div class="btn-row">
@@ -409,6 +432,7 @@
       </div>
       <div class="path" id="dash-path"></div>
       <div class="skip-link" onclick="restartDemo()">🔄 重新體驗（全部關卡重來）</div>
+      <div class="skip-link" onclick="confirmForgetDevice()">🗑️ 這不是我的帳號／清除這台裝置的紀錄</div>
     </section>
     <div class="toast" id="toast"></div>
 
@@ -459,6 +483,7 @@
           單杯成本 $35，理論上最低售價要 87.5 元，但現實不會標這種價格。<br>
           幫總監選一個實際售價：
         </div>
+        <div class="teacher-answer" id="price-teacher-answer" style="display:none;">🧑‍🏫 教師解答：$89 / $90 / $95 皆符合規則（$85 成本率 41.2% 會超標）</div>
         <div class="price-grid" id="price-grid"></div>
         <div class="ad-sum-note" id="price-note">點選一個符合成本規則（≤40%）的價格</div>
         <button class="btn btn-primary btn-block" id="price-confirm" disabled onclick="confirmPrice()">確認定價 →</button>
@@ -472,6 +497,7 @@
           廣告版面尺寸 <b>1080 × 1350 px</b>。飲料主視覺占版面高度的 <span class="frac"><span class="fn">3</span><span class="fd">5</span></span>，Logo 占 <span class="frac"><span class="fn">1</span><span class="fd">5</span></span>，文字區占 <span class="frac"><span class="fn">1</span><span class="fd">5</span></span>。<br>
           請算出三個區塊各是幾 px 高。
         </div>
+        <div class="teacher-answer" id="ad-teacher-answer" style="display:none;">🧑‍🏫 教師解答：飲料 810px／Logo 270px／文字 270px</div>
         <div class="calc-fields">
           <div class="calc-field"><label>飲料主視覺</label><input type="number" id="ad-drink" oninput="updateAdPreview()"><span class="u">px</span></div>
           <div class="calc-field"><label>Logo 區域</label><input type="number" id="ad-logo" oninput="updateAdPreview()"><span class="u">px</span></div>
@@ -566,7 +592,7 @@
    STATE
 ============================================================ */
 const state = {
-  company:'MOOCHA', director:'',
+  company:'MOOCHA', director:'', studentName:'',
   missions:{m1:false, m2:false, m3:false, m4:false, m5:false},
   chosenPrice:null,
   custom:null, // {drinkName, items, combinedText, values}
@@ -581,18 +607,51 @@ const DEPARTMENTS = [
   {key:'m5', title:'新品發表會', sub:'綜合應用', icon:'🎤', start:startMission5},
 ];
 
+let teacherPreviewMode = false;
+
 function show(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   const isHome = (id==='screen-onboarding' || id==='screen-dashboard' || id==='screen-teacher-login' || id==='screen-teacher-dashboard');
-  document.getElementById('topbar-back').style.display = isHome ? 'none' : 'flex';
-  document.getElementById('topbar-left').style.display = isHome ? 'inline' : 'none';
+  const backEl = document.getElementById('topbar-back');
+  if(teacherPreviewMode && id!=='screen-teacher-dashboard' && id!=='screen-teacher-login'){
+    backEl.style.display='flex';
+    backEl.textContent='🔑 返回教師後台';
+    backEl.onclick=exitTeacherPreview;
+    document.getElementById('topbar-left').style.display='none';
+  } else {
+    backEl.style.display = isHome ? 'none' : 'flex';
+    backEl.textContent='← 辦公桌';
+    backEl.onclick=backToDashboard;
+    document.getElementById('topbar-left').style.display = isHome ? 'inline' : 'none';
+  }
+}
+function exitTeacherPreview(){
+  teacherPreviewMode = false;
+  state.missions={m1:false,m2:false,m3:false,m4:false,m5:false};
+  show('screen-teacher-dashboard');
+  renderJumpGrid();
+  loadTeacherData();
+}
+function jumpToMission(key){
+  teacherPreviewMode = true;
+  const dept = DEPARTMENTS.find(d=>d.key===key);
+  setTopbar(dept.title+'（預覽）');
+  dept.start();
+}
+function renderJumpGrid(){
+  const el=document.getElementById('jump-grid');
+  el.innerHTML = DEPARTMENTS.map(d=>`
+    <div class="jump-btn" onclick="jumpToMission('${d.key}')">
+      <span class="jb-icon">${d.icon}</span>${d.title}
+    </div>`).join('');
 }
 function backToDashboard(){
   show('screen-dashboard');
   setTopbar('辦公桌');
 }
 function resetName(){
+  document.getElementById('input-name').value = state.studentName||'';
   document.getElementById('input-company').value = state.company==='MOOCHA' ? '' : state.company;
   document.getElementById('input-director').value = state.director==='總監' ? '' : state.director;
   show('screen-onboarding');
@@ -610,20 +669,28 @@ function showToast(msg){
    ONBOARDING
 ============================================================ */
 function startCompany(){
+  const n=document.getElementById('input-name').value.trim();
+  const nameErr=document.getElementById('name-error');
+  if(!n){
+    nameErr.textContent='請先填寫學生本名才能開始創業';
+    return;
+  }
+  nameErr.textContent='';
   const c=document.getElementById('input-company').value.trim();
   const d=document.getElementById('input-director').value.trim();
+  state.studentName = n;
   state.company = c||'MOOCHA';
   state.director = d||'總監';
   if(!state.sessionId){
     state.sessionId = 'stu_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
     state.record = {
-      sessionId: state.sessionId, company: state.company, director: state.director,
+      sessionId: state.sessionId, studentName: state.studentName, company: state.company, director: state.director,
       startedAt: Date.now(), updatedAt: Date.now(),
       missions:{m1:{done:false},m2:{done:false},m3:{done:false},m4:{done:false},m5:{done:false}},
       m1FirstChoiceCorrect:null, m3InvalidPriceClicks:0,
     };
   } else {
-    state.record.company = state.company; state.record.director = state.director;
+    state.record.studentName = state.studentName; state.record.company = state.company; state.record.director = state.director;
   }
   saveSharedRecord();
   renderDashboard();
@@ -685,14 +752,50 @@ function restartDemo(){
 }
 
 /* ============================================================
+   STORAGE ABSTRACTION
+   Uses Claude's cross-device shared storage when available (in-preview).
+   Falls back to browser localStorage when self-hosted (e.g. GitHub Pages),
+   so "remember this device" still works — but note: localStorage is
+   per-browser only, so the teacher dashboard can't aggregate across
+   different students' devices in that fallback mode.
+============================================================ */
+const HAS_CLAUDE_STORAGE = (typeof window.storage !== 'undefined');
+const STORE = {
+  async set(key, value, shared){
+    if(HAS_CLAUDE_STORAGE){ try{ return await window.storage.set(key, value, shared); }catch(e){ return null; } }
+    try{ localStorage.setItem(key, value); return {key,value,shared}; }catch(e){ return null; }
+  },
+  async get(key, shared){
+    if(HAS_CLAUDE_STORAGE){ try{ return await window.storage.get(key, shared); }catch(e){ return null; } }
+    try{
+      const v = localStorage.getItem(key);
+      return v===null ? null : {key, value:v, shared};
+    }catch(e){ return null; }
+  },
+  async list(prefix, shared){
+    if(HAS_CLAUDE_STORAGE){ try{ return await window.storage.list(prefix, shared); }catch(e){ return {keys:[]}; } }
+    try{
+      const keys=[];
+      for(let i=0;i<localStorage.length;i++){
+        const k=localStorage.key(i);
+        if(k && k.indexOf(prefix)===0) keys.push(k);
+      }
+      return {keys};
+    }catch(e){ return {keys:[]}; }
+  },
+  async remove(key){
+    if(HAS_CLAUDE_STORAGE){ try{ return await window.storage.delete(key); }catch(e){ return null; } }
+    try{ localStorage.removeItem(key); return true; }catch(e){ return null; }
+  },
+};
+
+/* ============================================================
    SAVE / RESTORE (persists across reloads)
 ============================================================ */
 async function saveSharedRecord(){
   if(!state.record) return;
   state.record.updatedAt = Date.now();
-  try{
-    await window.storage.set('student:'+state.sessionId, JSON.stringify(state.record), true);
-  }catch(e){ /* storage unavailable, fail silently */ }
+  await STORE.set('student:'+state.sessionId, JSON.stringify(state.record), true);
 }
 
 /* ============================================================
@@ -707,6 +810,7 @@ function teacherLogin(){
   const pw = document.getElementById('teacher-password').value;
   if(pw==='55555'){
     show('screen-teacher-dashboard');
+    renderJumpGrid();
     loadTeacherData();
   } else {
     document.getElementById('teacher-login-error').textContent='密碼不正確';
@@ -724,24 +828,18 @@ async function loadTeacherData(){
   const sumEl=document.getElementById('teacher-summary');
   listEl.innerHTML = `<div class="empty-note">載入中…</div>`;
   sumEl.innerHTML='';
+  const fallbackNote = HAS_CLAUDE_STORAGE ? '' : `<div class="empty-note" style="padding:0 0 14px;">⚠️ 目前是離線／自架環境，只看得到「這台裝置」上玩過的紀錄，無法跨裝置匯總全班資料。</div>`;
   let keys=[];
-  try{
-    const res = await window.storage.list('student:', true);
-    keys = (res && res.keys) || [];
-  }catch(e){
-    listEl.innerHTML = `<div class="empty-note">目前無法讀取學生資料</div>`;
-    return;
-  }
+  const res = await STORE.list('student:', true);
+  keys = (res && res.keys) || [];
   if(!keys.length){
-    listEl.innerHTML = `<div class="empty-note">目前還沒有學生開始玩</div>`;
+    listEl.innerHTML = fallbackNote + `<div class="empty-note">目前還沒有學生開始玩</div>`;
     return;
   }
   const records=[];
   for(const k of keys){
-    try{
-      const r = await window.storage.get(k, true);
-      if(r && r.value){ records.push(JSON.parse(r.value)); }
-    }catch(e){ /* skip unreadable entry */ }
+    const r = await STORE.get(k, true);
+    if(r && r.value){ try{ records.push(JSON.parse(r.value)); }catch(e){} }
   }
   records.sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
 
@@ -768,7 +866,7 @@ async function loadTeacherData(){
     </div>
   `;
 
-  listEl.innerHTML = records.map(r=>{
+  listEl.innerHTML = fallbackNote + records.map(r=>{
     const currentIdx = MISSION_ORDER.findIndex(m=> !(r.missions && r.missions[m] && r.missions[m].done));
     const dots = MISSION_ORDER.map((m,i)=>{
       const done = r.missions && r.missions[m] && r.missions[m].done;
@@ -783,7 +881,7 @@ async function loadTeacherData(){
     if(allDone) flags.push(`<span class="s-flag good">🏆 全部完成</span>`);
     return `
       <div class="student-card">
-        <div class="s-name">${r.company||'—'} <span style="font-weight:400;color:var(--dim);">／ ${r.director||'—'}</span></div>
+        <div class="s-name">${r.studentName||'（未填姓名）'} <span style="font-weight:400;color:var(--dim);">／ ${r.company||'—'} · ${r.director||'—'}</span></div>
         <div class="s-meta">開始 ${fmtTime(r.startedAt)}　最後活動 ${fmtTime(r.updatedAt)}</div>
         <div class="student-track">${dots}</div>
         <div class="student-flags">${flags.join('') || `<span class="s-flag">進行中</span>`}</div>
@@ -791,24 +889,40 @@ async function loadTeacherData(){
   }).join('');
 }
 async function saveProgress(){
-  try{
-    await window.storage.set('progress', JSON.stringify({
-      company: state.company, director: state.director, missions: state.missions
-    }));
-  }catch(e){ /* storage unavailable, fail silently */ }
+  await STORE.set('progress', JSON.stringify({
+    sessionId: state.sessionId, studentName: state.studentName,
+    company: state.company, director: state.director, missions: state.missions
+  }));
 }
 async function loadProgress(){
-  try{
-    const res = await window.storage.get('progress');
-    if(res && res.value){
+  const res = await STORE.get('progress');
+  if(res && res.value){
+    try{
       const data = JSON.parse(res.value);
+      if(data.sessionId) state.sessionId = data.sessionId;
+      if(data.studentName) state.studentName = data.studentName;
       if(data.company) state.company = data.company;
       if(data.director) state.director = data.director;
       if(data.missions) state.missions = data.missions;
       return true;
-    }
-  }catch(e){ /* no saved progress yet */ }
+    }catch(e){ /* corrupt save, ignore */ }
+  }
   return false;
+}
+function confirmForgetDevice(){
+  if(confirm('確定要清除這台裝置上的紀錄嗎？你目前的姓名、公司與所有關卡進度都會被刪除，且無法復原。')){
+    forgetThisDevice();
+  }
+}
+async function forgetThisDevice(){
+  await STORE.remove('progress');
+  state.sessionId=null; state.studentName=''; state.company='MOOCHA'; state.director='';
+  state.missions={m1:false,m2:false,m3:false,m4:false,m5:false};
+  state.record=null;
+  document.getElementById('input-name').value='';
+  document.getElementById('input-company').value='';
+  document.getElementById('input-director').value='';
+  show('screen-onboarding');
 }
 (async function initApp(){
   const hasSave = await loadProgress();
@@ -925,6 +1039,17 @@ function loadPuzzle(cfg, onSolved){
   show('screen-puzzle');
   renderPuzzle();
 }
+function gcd(a,b){ return b===0 ? a : gcd(b, a%b); }
+function correctPuzzleAnswer(cfg){
+  const A=cfg.ratioA, B=cfg.ratioB;
+  const sA=A.vals[A.sharedIndex], sB=B.vals[B.sharedIndex];
+  const l = (sA*sB)/gcd(sA,sB);
+  const mA0=l/sA, mB0=l/sB;
+  const values={};
+  A.items.forEach((n,i)=>{ values[n]=A.vals[i]*mA0; });
+  B.items.forEach((n,i)=>{ values[n]=B.vals[i]*mB0; });
+  return cfg.finalOrder.map(n=>values[n]).join(' : ');
+}
 function renderPuzzle(){
   const cfg=currentPuzzle, c=document.getElementById('puzzle-container');
   const A=cfg.ratioA, B=cfg.ratioB;
@@ -944,8 +1069,12 @@ function renderPuzzle(){
     B.items.forEach((n,i)=>{ values[n]=B.vals[i]*mB; });
     combinedHtml = cfg.finalOrder.map(n=>values[n]).join(' : ');
   }
+  const teacherAnswerHtml = teacherPreviewMode ? `
+    <div class="teacher-answer">🧑‍🏫 教師解答：${cfg.finalOrder.join(' : ')} = ${correctPuzzleAnswer(cfg)}</div>
+  ` : '';
   c.innerHTML = `
     <div class="puzzle-story">${cfg.story}</div>
+    ${teacherAnswerHtml}
     <div class="ratio-card">
       <div class="label">${A.items[0]} : ${A.items[1]}</div>
       <div class="ratio-line">${termHtml(aVal0,0,'A')}<span class="colon">:</span>${termHtml(aVal1,1,'A')}</div>
@@ -962,7 +1091,7 @@ function renderPuzzle(){
     </div>
     <div class="match-indicator ${matched?'ok':''}">共同項「${sharedName}」— A 邊 = ${sharedFromA}　B 邊 = ${sharedFromB}${matched?'　✓ 一樣大了！':''}</div>
     <div class="combined-preview ${matched?'show':''}">${combinedHtml}</div>
-    <button class="btn btn-primary btn-block" ${matched?'':'disabled'} onclick="confirmPuzzle()">鎖定黃金連比 →</button>
+    <button class="btn btn-primary btn-block" ${(matched||teacherPreviewMode)?'':'disabled'} onclick="confirmPuzzle()">鎖定黃金連比 →</button>
   `;
 }
 function changeMult(side, delta){
@@ -972,7 +1101,7 @@ function changeMult(side, delta){
 function confirmPuzzle(){
   const A=currentPuzzle.ratioA, B=currentPuzzle.ratioB;
   const matched=(A.vals[A.sharedIndex]*mA)===(B.vals[B.sharedIndex]*mB);
-  if(!matched) return;
+  if(!matched && !teacherPreviewMode) return;
   if(onPuzzleSolved) onPuzzleSolved();
 }
 
@@ -1031,6 +1160,9 @@ function renderCalcStep(){
       <div class="hint-toggle" id="hint-btn" onclick="toggleHint()">💡 需要提示嗎？</div>
       <div class="hint-text" id="hint-text">${step.hint}</div>
     ` : ''}
+    ${teacherPreviewMode ? `
+      <div class="teacher-answer">🧑‍🏫 教師解答：${step.fields.map(f=>`${f.label} = ${f.expected}${f.unit||''}`).join('　')}</div>
+    ` : ''}
     <div class="calc-fields">
       ${step.fields.map(f=>`
         <div class="calc-field">
@@ -1064,7 +1196,7 @@ function checkCalcStep(){
     if(input.value!==''){ input.classList.add(ok?'ok':'bad'); }
     if(!ok) allOk=false;
   });
-  document.getElementById('calc-next').disabled = !allOk;
+  document.getElementById('calc-next').disabled = teacherPreviewMode ? false : !allOk;
   document.getElementById('calc-feedback').className='calc-feedback '+(allOk?'ok':'');
   document.getElementById('calc-feedback').textContent = allOk ? '✓ 答對了！' : '';
 }
@@ -1151,6 +1283,8 @@ function onMission3StepDone(){
   show('screen-price');
   state.chosenPrice=null;
   renderPriceGrid();
+  document.getElementById('price-teacher-answer').style.display = teacherPreviewMode ? 'block' : 'none';
+  document.getElementById('price-confirm').disabled = !teacherPreviewMode;
 }
 function renderPriceGrid(){
   const grid=document.getElementById('price-grid');
@@ -1181,8 +1315,8 @@ function renderPriceGrid(){
   });
 }
 function confirmPrice(){
-  if(!state.chosenPrice) return;
-  const p=state.chosenPrice, profit=p-35;
+  if(!state.chosenPrice && !teacherPreviewMode) return;
+  const p=state.chosenPrice||89, profit=p-35;
   showSuccess({
     icon:'💰', title:'定價確定！',
     extraHtml:`<div class="ratio-card"><div class="label">最終定價</div><div class="ratio-line" style="margin-bottom:0;"><span class="term">$${p}</span></div></div>`,
@@ -1208,6 +1342,7 @@ function startMission4(){
 }
 function resetAdLayout(){
   ['ad-drink','ad-logo','ad-text'].forEach(id=>{ document.getElementById(id).value=''; document.getElementById(id).classList.remove('ok','bad'); });
+  document.getElementById('ad-teacher-answer').style.display = teacherPreviewMode ? 'block' : 'none';
   updateAdPreview();
 }
 function updateAdPreview(){
@@ -1233,7 +1368,7 @@ function updateAdPreview(){
   document.getElementById('ad-text').classList.toggle('bad', text>0 && !okText);
   document.getElementById('ad-feedback').className='calc-feedback '+(allOk?'ok':'');
   document.getElementById('ad-feedback').textContent = allOk ? '✓ 版面配置正確！' : '';
-  document.getElementById('ad-confirm').disabled = !allOk;
+  document.getElementById('ad-confirm').disabled = teacherPreviewMode ? false : !allOk;
 }
 function confirmAdLayout(){
   showSuccess({
@@ -1261,14 +1396,21 @@ function startMission5(){
 }
 function generateCustomPuzzle(){
   const drinkName=document.getElementById('cr-drinkname').value.trim()||'招牌飲料';
-  const aName=document.getElementById('cr-a-name').value.trim();
+  let aName=document.getElementById('cr-a-name').value.trim();
   const aVal=parseFloat(document.getElementById('cr-a-val').value);
-  const bName1=document.getElementById('cr-b-name').value.trim();
+  let bName1=document.getElementById('cr-b-name').value.trim();
   const bVal1=parseFloat(document.getElementById('cr-b-val1').value);
-  const bName2=document.getElementById('cr-b-name2').value.trim();
+  let bName2=document.getElementById('cr-b-name2').value.trim();
   const bVal2=parseFloat(document.getElementById('cr-b-val2').value);
-  const cName=document.getElementById('cr-c-name').value.trim();
+  let cName=document.getElementById('cr-c-name').value.trim();
   const cVal=parseFloat(document.getElementById('cr-c-val').value);
+
+  if(teacherPreviewMode){
+    aName = aName || '蜜桃';
+    bName1 = bName1 || '烏龍';
+    bName2 = bName2 || bName1;
+    cName = cName || '氣泡水';
+  }
 
   const err=document.getElementById('cr-error');
   if(!aName||!bName1||!bName2||!cName||isNaN(aVal)||isNaN(bVal1)||isNaN(bVal2)||isNaN(cVal)||aVal<=0||bVal1<=0||bVal2<=0||cVal<=0){

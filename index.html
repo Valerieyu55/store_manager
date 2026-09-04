@@ -6,6 +6,9 @@
 <title>YOUR TEA COMPANY — 全部關卡</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=LXGW+WenKai+TC&family=Huninn&family=Space+Mono:wght@400;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<!-- Firebase (optional) — only used if firebaseConfig below is filled in; otherwise the app falls back to local-device storage automatically. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
   :root{
     --bg-night:#164943;
@@ -589,6 +592,26 @@
 
 <script>
 /* ============================================================
+   FIREBASE CONFIG — 填入後，教師登入即可看到「所有裝置」學生的紀錄。
+   留空的話，網頁會自動使用本機模式（跟現在完全一樣，不影響任何人）。
+   設定步驟請見對話裡的說明。
+============================================================ */
+const firebaseConfig = {
+  apiKey: "AIzaSyAU8ZvaMij7CcKwz9WXCQDoEAR6SqCL8x4",
+  authDomain: "tea-shop-course.firebaseapp.com",
+  databaseURL: "https://tea-shop-course-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tea-shop-course",
+};
+let firebaseReady = false;
+let fbDB = null;
+if(firebaseConfig.apiKey && firebaseConfig.databaseURL && typeof firebase !== 'undefined'){
+  try{
+    firebase.initializeApp(firebaseConfig);
+    fbDB = firebase.database();
+    firebaseReady = true;
+  }catch(e){ firebaseReady = false; }
+}
+/* ============================================================
    STATE
 ============================================================ */
 const state = {
@@ -762,10 +785,20 @@ function restartDemo(){
 const HAS_CLAUDE_STORAGE = (typeof window.storage !== 'undefined');
 const STORE = {
   async set(key, value, shared){
+    if(shared && firebaseReady){
+      try{ await fbDB.ref('students/'+key).set({value, updatedAt: Date.now()}); return {key,value,shared}; }catch(e){ /* fall through */ }
+    }
     if(HAS_CLAUDE_STORAGE){ try{ return await window.storage.set(key, value, shared); }catch(e){ return null; } }
     try{ localStorage.setItem(key, value); return {key,value,shared}; }catch(e){ return null; }
   },
   async get(key, shared){
+    if(shared && firebaseReady){
+      try{
+        const snap = await fbDB.ref('students/'+key).once('value');
+        const v = snap.val();
+        if(v) return {key, value:v.value, shared};
+      }catch(e){ /* fall through */ }
+    }
     if(HAS_CLAUDE_STORAGE){ try{ return await window.storage.get(key, shared); }catch(e){ return null; } }
     try{
       const v = localStorage.getItem(key);
@@ -773,6 +806,14 @@ const STORE = {
     }catch(e){ return null; }
   },
   async list(prefix, shared){
+    if(shared && firebaseReady){
+      try{
+        const snap = await fbDB.ref('students').once('value');
+        const all = snap.val() || {};
+        const keys = Object.keys(all).filter(k=> k.indexOf(prefix)===0);
+        return {keys};
+      }catch(e){ /* fall through */ }
+    }
     if(HAS_CLAUDE_STORAGE){ try{ return await window.storage.list(prefix, shared); }catch(e){ return {keys:[]}; } }
     try{
       const keys=[];
@@ -828,7 +869,9 @@ async function loadTeacherData(){
   const sumEl=document.getElementById('teacher-summary');
   listEl.innerHTML = `<div class="empty-note">載入中…</div>`;
   sumEl.innerHTML='';
-  const fallbackNote = HAS_CLAUDE_STORAGE ? '' : `<div class="empty-note" style="padding:0 0 14px;">⚠️ 目前是離線／自架環境，只看得到「這台裝置」上玩過的紀錄，無法跨裝置匯總全班資料。</div>`;
+  const fallbackNote = firebaseReady
+    ? `<div class="empty-note" style="padding:0 0 14px;">☁️ 已連接雲端資料庫，這裡看到的是所有裝置的學生紀錄。</div>`
+    : (HAS_CLAUDE_STORAGE ? '' : `<div class="empty-note" style="padding:0 0 14px;">⚠️ 尚未設定雲端資料庫，目前只看得到「這台裝置」上玩過的紀錄，無法跨裝置匯總全班資料。</div>`);
   let keys=[];
   const res = await STORE.list('student:', true);
   keys = (res && res.keys) || [];
@@ -891,7 +934,10 @@ async function loadTeacherData(){
 async function saveProgress(){
   await STORE.set('progress', JSON.stringify({
     sessionId: state.sessionId, studentName: state.studentName,
-    company: state.company, director: state.director, missions: state.missions
+    company: state.company, director: state.director, missions: state.missions,
+    startedAt: state.record ? state.record.startedAt : undefined,
+    m1FirstChoiceCorrect: state.record ? state.record.m1FirstChoiceCorrect : undefined,
+    m3InvalidPriceClicks: state.record ? state.record.m3InvalidPriceClicks : undefined,
   }));
 }
 async function loadProgress(){
@@ -904,6 +950,17 @@ async function loadProgress(){
       if(data.company) state.company = data.company;
       if(data.director) state.director = data.director;
       if(data.missions) state.missions = data.missions;
+      if(state.sessionId && state.studentName){
+        state.record = {
+          sessionId: state.sessionId, studentName: state.studentName,
+          company: state.company, director: state.director,
+          startedAt: data.startedAt || Date.now(), updatedAt: Date.now(),
+          missions: Object.fromEntries(Object.keys(state.missions).map(k=>[k,{done:state.missions[k]}])),
+          m1FirstChoiceCorrect: data.m1FirstChoiceCorrect!==undefined ? data.m1FirstChoiceCorrect : null,
+          m3InvalidPriceClicks: data.m3InvalidPriceClicks||0,
+        };
+        if(firebaseReady){ saveSharedRecord(); } // opportunistic backfill to the cloud once it's configured
+      }
       return true;
     }catch(e){ /* corrupt save, ignore */ }
   }

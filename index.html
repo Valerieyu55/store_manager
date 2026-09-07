@@ -186,6 +186,8 @@
   .ratio-line .term.shared{border-color:var(--amber);color:var(--amber);}
   .ratio-line .colon{color:var(--dim);}
   .stepper-row{display:flex;align-items:center;justify-content:center;gap:14px;}
+  .mult-input{width:70px;text-align:center;font-family:var(--font-mono);font-weight:700;font-size:clamp(16px,.6vw+13px,19px);padding:8px 6px;border-radius:10px;border:1.5px solid var(--line);background:var(--bg-night-2);color:var(--ink);}
+  .mult-input:focus{border-color:var(--peach);}
   .stepper-label{font-size:12.5px;color:var(--dim);}
   .stepper{display:flex;align-items:center;gap:10px;background:var(--bg-night-2);border:1px solid var(--line);border-radius:12px;padding:6px 10px;}
   .stepper button{width:28px;height:28px;border-radius:8px;border:none;background:var(--panel);color:var(--ink);font-size:16px;font-weight:700;cursor:pointer;}
@@ -270,8 +272,37 @@
   .stat-box{background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center;}
   .stat-box .s-num{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--amber);}
   .stat-box .s-label{font-size:10.5px;color:var(--dim);margin-top:2px;}
-  .student-card{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+  .student-card{background:var(--panel-2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:border-color .15s ease;}
+  .student-card:hover{border-color:var(--taro);}
   .student-card .s-name{font-weight:700;font-size:15px;color:var(--ink);}
+  .s-expand{font-size:11.5px;color:var(--taro);font-weight:600;margin-left:6px;}
+  .student-detail{display:none;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);}
+  .student-detail.open{display:block;}
+  .detail-mission{margin-bottom:10px;}
+  .dm-title{font-size:12.5px;font-weight:700;color:var(--amber);margin-bottom:4px;}
+  .dm-row{display:flex;justify-content:space-between;font-size:12.5px;color:var(--ink);padding:2px 0;}
+  .dm-row b{font-family:var(--font-mono);font-weight:700;}
+  .dm-empty{font-size:12px;color:var(--dim);}
+  .folder-panel{margin-bottom:16px;}
+  .folder-add-row{display:flex;gap:8px;margin-bottom:10px;}
+  .folder-add-row input{flex:1;}
+  .folder-chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .folder-chip{
+    display:flex;align-items:center;gap:6px;
+    background:var(--panel-2);border:1.5px solid var(--line);border-radius:999px;
+    padding:6px 8px 6px 14px;font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;
+  }
+  .folder-chip.active{border-color:var(--peach);background:var(--panel);}
+  .folder-chip .fc-count{color:var(--dim);font-weight:400;}
+  .folder-chip .fc-del{
+    width:20px;height:20px;border-radius:50%;background:var(--bg-night-2);
+    display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--dim);
+  }
+  .folder-chip .fc-del:hover{background:var(--red);color:#fff;}
+  .folder-select{
+    margin-top:8px;font-size:12.5px;padding:6px 8px;border-radius:8px;
+    border:1px solid var(--line);background:var(--bg-night-2);color:var(--ink);
+  }
   .student-card .s-meta{font-size:11.5px;color:var(--dim);margin-bottom:8px;}
   .student-track{display:flex;gap:6px;margin-bottom:8px;}
   .student-track .t-dot{flex:1;height:8px;border-radius:4px;background:var(--bg-night-2);border:1px solid var(--line);}
@@ -418,6 +449,13 @@
           <div class="jump-grid" id="jump-grid"></div>
         </div>
         <div id="teacher-summary"></div>
+        <div class="folder-panel">
+          <div class="folder-add-row">
+            <input type="text" id="new-folder-name" placeholder="新增資料夾，例如：10年級A班">
+            <button class="btn btn-primary" style="padding:10px 18px;font-size:14px;" onclick="addFolder()">＋ 新增</button>
+          </div>
+          <div class="folder-chips" id="folder-chips"></div>
+        </div>
         <div id="teacher-student-list"></div>
         <div class="btn-row">
           <button class="btn btn-ghost btn-block" onclick="loadTeacherData()">🔄 重新整理</button>
@@ -752,12 +790,17 @@ function renderDashboard(){
     path.appendChild(node);
   });
 }
+let missionAnswers = {};
 function completeMission(key, nextLabel){
   state.missions[key]=true;
   renderDashboard();
   saveProgress();
   if(state.record){
-    state.record.missions[key] = { done:true, completedAt: Date.now(), startedAt: (state.record.missions[key]&&state.record.missions[key].startedAt)||Date.now() };
+    state.record.missions[key] = {
+      done:true, completedAt: Date.now(),
+      startedAt: (state.record.missions[key]&&state.record.missions[key].startedAt)||Date.now(),
+      answers: missionAnswers[key]||[],
+    };
     saveSharedRecord();
   }
 }
@@ -864,19 +907,28 @@ function fmtTime(ts){
   const d=new Date(ts);
   return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
+let teacherFolders = [];
+let activeFolderFilter = 'all';
+let allTeacherRecords = [];
+let lastTeacherRecords = [];
+
 async function loadTeacherData(){
   const listEl=document.getElementById('teacher-student-list');
   const sumEl=document.getElementById('teacher-summary');
   listEl.innerHTML = `<div class="empty-note">載入中…</div>`;
   sumEl.innerHTML='';
-  const fallbackNote = firebaseReady
-    ? `<div class="empty-note" style="padding:0 0 14px;">☁️ 已連接雲端資料庫，這裡看到的是所有裝置的學生紀錄。</div>`
-    : (HAS_CLAUDE_STORAGE ? '' : `<div class="empty-note" style="padding:0 0 14px;">⚠️ 尚未設定雲端資料庫，目前只看得到「這台裝置」上玩過的紀錄，無法跨裝置匯總全班資料。</div>`);
-  let keys=[];
+
+  const foldersRes = await STORE.get('folders', true);
+  teacherFolders = (foldersRes && foldersRes.value) ? JSON.parse(foldersRes.value) : [];
+
   const res = await STORE.list('student:', true);
-  keys = (res && res.keys) || [];
+  const keys = (res && res.keys) || [];
   if(!keys.length){
+    const fallbackNote = firebaseReady
+      ? `<div class="empty-note" style="padding:0 0 14px;">☁️ 已連接雲端資料庫，這裡看到的是所有裝置的學生紀錄。</div>`
+      : (HAS_CLAUDE_STORAGE ? '' : `<div class="empty-note" style="padding:0 0 14px;">⚠️ 尚未設定雲端資料庫，目前只看得到「這台裝置」上玩過的紀錄，無法跨裝置匯總全班資料。</div>`);
     listEl.innerHTML = fallbackNote + `<div class="empty-note">目前還沒有學生開始玩</div>`;
+    renderFolderChips();
     return;
   }
   const records=[];
@@ -885,15 +937,15 @@ async function loadTeacherData(){
     if(r && r.value){ try{ records.push(JSON.parse(r.value)); }catch(e){} }
   }
   records.sort((a,b)=> (b.updatedAt||0)-(a.updatedAt||0));
+  allTeacherRecords = records;
 
-  // summary stats
+  // summary stats (always over the full class, not the filtered folder)
   const total = records.length;
   const missionDoneCounts = {m1:0,m2:0,m3:0,m4:0,m5:0};
-  let m1CorrectCount=0, m1AnsweredCount=0, invalidPriceTotal=0;
+  let m1CorrectCount=0, m1AnsweredCount=0;
   records.forEach(r=>{
     MISSION_ORDER.forEach(m=>{ if(r.missions && r.missions[m] && r.missions[m].done) missionDoneCounts[m]++; });
     if(r.m1FirstChoiceCorrect!==null && r.m1FirstChoiceCorrect!==undefined){ m1AnsweredCount++; if(r.m1FirstChoiceCorrect) m1CorrectCount++; }
-    invalidPriceTotal += r.m3InvalidPriceClicks||0;
   });
   const m5DonePct = total? Math.round(missionDoneCounts.m5/total*100) : 0;
   const m1CorrectPct = m1AnsweredCount? Math.round(m1CorrectCount/m1AnsweredCount*100) : 0;
@@ -909,7 +961,77 @@ async function loadTeacherData(){
     </div>
   `;
 
-  listEl.innerHTML = fallbackNote + records.map(r=>{
+  renderFolderChips();
+  renderStudentList();
+}
+
+function renderFolderChips(){
+  const el = document.getElementById('folder-chips');
+  if(!el) return;
+  const countAll = allTeacherRecords.length;
+  const countUnassigned = allTeacherRecords.filter(r=>!r.folder).length;
+  const chips = [
+    `<div class="folder-chip ${activeFolderFilter==='all'?'active':''}" onclick="setFolderFilter('all')">全部 <span class="fc-count">${countAll}</span></div>`,
+    `<div class="folder-chip ${activeFolderFilter==='unassigned'?'active':''}" onclick="setFolderFilter('unassigned')">未分類 <span class="fc-count">${countUnassigned}</span></div>`,
+  ];
+  teacherFolders.forEach(f=>{
+    const count = allTeacherRecords.filter(r=>r.folder===f).length;
+    chips.push(`
+      <div class="folder-chip ${activeFolderFilter===f?'active':''}" onclick="setFolderFilter('${f}')">
+        📁 ${f} <span class="fc-count">${count}</span>
+        <span class="fc-del" onclick="event.stopPropagation(); deleteFolder('${f}')">✕</span>
+      </div>`);
+  });
+  el.innerHTML = chips.join('');
+}
+function setFolderFilter(name){
+  activeFolderFilter = name;
+  renderFolderChips();
+  renderStudentList();
+}
+async function addFolder(){
+  const input = document.getElementById('new-folder-name');
+  const name = input.value.trim();
+  if(!name) return;
+  if(teacherFolders.includes(name)){ showToast('這個資料夾已經存在了'); return; }
+  teacherFolders.push(name);
+  await STORE.set('folders', JSON.stringify(teacherFolders), true);
+  input.value='';
+  renderFolderChips();
+}
+async function deleteFolder(name){
+  if(!confirm(`確定要刪除資料夾「${name}」嗎？裡面的學生不會被刪除，只是會變回未分類。`)) return;
+  teacherFolders = teacherFolders.filter(f=>f!==name);
+  await STORE.set('folders', JSON.stringify(teacherFolders), true);
+  if(activeFolderFilter===name) activeFolderFilter='all';
+  renderFolderChips();
+  renderStudentList();
+}
+async function assignFolder(idx, folderName){
+  const r = lastTeacherRecords[idx];
+  r.folder = folderName || null;
+  await STORE.set('student:'+r.sessionId, JSON.stringify(r), true);
+  renderFolderChips();
+}
+
+function renderStudentList(){
+  const listEl=document.getElementById('teacher-student-list');
+  const fallbackNote = firebaseReady
+    ? `<div class="empty-note" style="padding:0 0 14px;">☁️ 已連接雲端資料庫，這裡看到的是所有裝置的學生紀錄。</div>`
+    : (HAS_CLAUDE_STORAGE ? '' : `<div class="empty-note" style="padding:0 0 14px;">⚠️ 尚未設定雲端資料庫，目前只看得到「這台裝置」上玩過的紀錄，無法跨裝置匯總全班資料。</div>`);
+
+  const records = activeFolderFilter==='all' ? allTeacherRecords
+    : activeFolderFilter==='unassigned' ? allTeacherRecords.filter(r=>!r.folder)
+    : allTeacherRecords.filter(r=>r.folder===activeFolderFilter);
+
+  lastTeacherRecords = records;
+
+  if(!records.length){
+    listEl.innerHTML = fallbackNote + `<div class="empty-note">這個資料夾目前沒有學生</div>`;
+    return;
+  }
+
+  listEl.innerHTML = fallbackNote + records.map((r,idx)=>{
     const currentIdx = MISSION_ORDER.findIndex(m=> !(r.missions && r.missions[m] && r.missions[m].done));
     const dots = MISSION_ORDER.map((m,i)=>{
       const done = r.missions && r.missions[m] && r.missions[m].done;
@@ -922,14 +1044,32 @@ async function loadTeacherData(){
     if((r.m3InvalidPriceClicks||0)>0) flags.push(`<span class="s-flag warn">M3 選錯定價 ${r.m3InvalidPriceClicks} 次</span>`);
     const allDone = currentIdx===-1;
     if(allDone) flags.push(`<span class="s-flag good">🏆 全部完成</span>`);
+    const folderOptions = `<option value="">未分類</option>` + teacherFolders.map(f=>`<option value="${f}" ${r.folder===f?'selected':''}>${f}</option>`).join('');
     return `
-      <div class="student-card">
-        <div class="s-name">${r.studentName||'（未填姓名）'} <span style="font-weight:400;color:var(--dim);">／ ${r.company||'—'} · ${r.director||'—'}</span></div>
+      <div class="student-card" onclick="toggleStudentDetail(${idx})">
+        <div class="s-name">${r.studentName||'（未填姓名）'} <span style="font-weight:400;color:var(--dim);">／ ${r.company||'—'} · ${r.director||'—'}</span> <span class="s-expand">▾ 查看每關作答</span></div>
         <div class="s-meta">開始 ${fmtTime(r.startedAt)}　最後活動 ${fmtTime(r.updatedAt)}</div>
         <div class="student-track">${dots}</div>
         <div class="student-flags">${flags.join('') || `<span class="s-flag">進行中</span>`}</div>
+        <select class="folder-select" onclick="event.stopPropagation()" onchange="assignFolder(${idx}, this.value)">${folderOptions}</select>
+        <div class="student-detail" id="student-detail-${idx}"></div>
       </div>`;
   }).join('');
+}
+function toggleStudentDetail(idx){
+  const el = document.getElementById('student-detail-'+idx);
+  const r = lastTeacherRecords[idx];
+  const isOpen = el.classList.contains('open');
+  if(isOpen){ el.classList.remove('open'); return; }
+  el.innerHTML = MISSION_ORDER.map(m=>{
+    const md = r.missions && r.missions[m];
+    if(!md || !md.done){
+      return `<div class="detail-mission"><div class="dm-title">${MISSION_LABELS[m]}</div><div class="dm-empty">尚未完成</div></div>`;
+    }
+    const rows = (md.answers||[]).map(a=>`<div class="dm-row"><span>${a.label}</span><b>${a.value}</b></div>`).join('') || `<div class="dm-empty">沒有詳細作答紀錄</div>`;
+    return `<div class="detail-mission"><div class="dm-title">${MISSION_LABELS[m]} · 完成於 ${fmtTime(md.completedAt)}</div>${rows}</div>`;
+  }).join('');
+  el.classList.add('open');
 }
 async function saveProgress(){
   await STORE.set('progress', JSON.stringify({
@@ -1066,6 +1206,10 @@ function recordM1Choice(correct){
 }
 function goSolveMission1(){
   loadPuzzle(PUZZLES.main, ()=>{
+    missionAnswers.m1 = [
+      {label:'第一次選擇', value: state.record ? (state.record.m1FirstChoiceCorrect?'✅ 一次答對（等等，好像有問題）':'❌ 先選了「可以，先開始生產」') : '—'},
+      {label:'黃金連比', value:'紅茶:綠茶:麥茶 = 4:6:9'},
+    ];
     showSuccess({
       icon:'✨', title:'黃金連比找到了！', titleClass:'',
       ratioLabel:'紅茶 : 綠茶 : 麥茶', ratioValue:'4 : 6 : 9',
@@ -1135,15 +1279,15 @@ function renderPuzzle(){
     <div class="ratio-card">
       <div class="label">${A.items[0]} : ${A.items[1]}</div>
       <div class="ratio-line">${termHtml(aVal0,0,'A')}<span class="colon">:</span>${termHtml(aVal1,1,'A')}</div>
-      <div class="stepper-row"><span class="stepper-label">放大倍數</span>
-        <div class="stepper"><button onclick="changeMult('A',-1)">−</button><span class="m-val">×${mA}</span><button onclick="changeMult('A',1)">+</button></div>
+      <div class="stepper-row"><span class="stepper-label">放大倍數 ×</span>
+        <input type="number" class="mult-input" min="1" max="9" value="${mA}" oninput="setMult('A',this.value)">
       </div>
     </div>
     <div class="ratio-card">
       <div class="label">${B.items[0]} : ${B.items[1]}</div>
       <div class="ratio-line">${termHtml(bVal0,0,'B')}<span class="colon">:</span>${termHtml(bVal1,1,'B')}</div>
-      <div class="stepper-row"><span class="stepper-label">放大倍數</span>
-        <div class="stepper"><button onclick="changeMult('B',-1)">−</button><span class="m-val">×${mB}</span><button onclick="changeMult('B',1)">+</button></div>
+      <div class="stepper-row"><span class="stepper-label">放大倍數 ×</span>
+        <input type="number" class="mult-input" min="1" max="9" value="${mB}" oninput="setMult('B',this.value)">
       </div>
     </div>
     <div class="match-indicator ${matched?'ok':''}">共同項「${sharedName}」— A 邊 = ${sharedFromA}　B 邊 = ${sharedFromB}${matched?'　✓ 一樣大了！':''}</div>
@@ -1151,9 +1295,14 @@ function renderPuzzle(){
     <button class="btn btn-primary btn-block" ${(matched||teacherPreviewMode)?'':'disabled'} onclick="confirmPuzzle()">鎖定黃金連比 →</button>
   `;
 }
-function changeMult(side, delta){
-  if(side==='A'){ mA=Math.min(9,Math.max(1,mA+delta)); } else { mB=Math.min(9,Math.max(1,mB+delta)); }
+function setMult(side, value){
+  const v = Math.min(9, Math.max(1, parseInt(value,10)||1));
+  if(side==='A'){ mA=v; } else { mB=v; }
   renderPuzzle();
+  // keep focus + caret on the field the student is typing in
+  const idx = side==='A' ? 0 : 1;
+  const inputs = document.querySelectorAll('.mult-input');
+  if(inputs[idx]){ inputs[idx].focus(); inputs[idx].select(); }
 }
 function confirmPuzzle(){
   const A=currentPuzzle.ratioA, B=currentPuzzle.ratioB;
@@ -1305,6 +1454,7 @@ function onMission2Step1Done(){
   ]);
 }
 function onMission2Done(){
+  missionAnswers.m2 = calcHistory.map(h=>({label:h.label, value:h.value+(h.unit||'')}));
   showSuccess({
     icon:'🧋', title:'量產配方確定！',
     ratioLabel:'200 杯總需求（公升）', ratioValue:'紅16 : 綠24 : 麥36',
@@ -1374,6 +1524,7 @@ function renderPriceGrid(){
 function confirmPrice(){
   if(!state.chosenPrice && !teacherPreviewMode) return;
   const p=state.chosenPrice||89, profit=p-35;
+  missionAnswers.m3 = [...calcHistory.map(h=>({label:h.label, value:h.value+(h.unit||'')})), {label:'選擇售價', value:'$'+p}, {label:'單杯毛利', value:'$'+profit}];
   showSuccess({
     icon:'💰', title:'定價確定！',
     extraHtml:`<div class="ratio-card"><div class="label">最終定價</div><div class="ratio-line" style="margin-bottom:0;"><span class="term">$${p}</span></div></div>`,
@@ -1428,6 +1579,14 @@ function updateAdPreview(){
   document.getElementById('ad-confirm').disabled = teacherPreviewMode ? false : !allOk;
 }
 function confirmAdLayout(){
+  const drink=document.getElementById('ad-drink').value;
+  const logo=document.getElementById('ad-logo').value;
+  const text=document.getElementById('ad-text').value;
+  missionAnswers.m4 = [
+    {label:'飲料主視覺', value:drink+'px'},
+    {label:'Logo', value:logo+'px'},
+    {label:'文字區', value:text+'px'},
+  ];
   showSuccess({
     icon:'📣', title:'廣告版位完成！',
     extraHtml:`<div class="ratio-card"><div class="label">版面配置（px）</div><div class="ratio-line" style="margin-bottom:0;"><span class="term">810</span><span class="colon">:</span><span class="term">270</span><span class="colon">:</span><span class="term">270</span></div></div>`,
@@ -1524,6 +1683,14 @@ function generatePlanDoc(){
     <div class="p-row"><span>毛利</span><b>$${(price-cost).toFixed(1)}</b></div>
     ${slogan?`<div class="p-slogan">「${slogan}」</div>`:''}
   `;
+  missionAnswers.m5 = [
+    {label:'招牌飲料', value:c.drinkName},
+    {label:'黃金連比', value:c.ratioLabel+' = '+c.ratioValue},
+    {label:'售價', value:'$'+price},
+    {label:'成本', value:'$'+cost},
+    {label:'毛利', value:'$'+(price-cost).toFixed(1)},
+    {label:'Slogan', value:slogan||'（未填寫）'},
+  ];
   show('screen-finalplan');
 }
 function finishMission5(){

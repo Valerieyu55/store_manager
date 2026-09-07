@@ -105,6 +105,14 @@
   .btn-ghost:hover{filter:brightness(1.03);}
   .btn-block{width:100%;max-width:300px;margin-left:auto;margin-right:auto;display:block;}
   .btn-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;max-width:480px;margin-left:auto;margin-right:auto;}
+  .btn-col{display:flex;flex-direction:column;gap:12px;margin-top:18px;max-width:400px;margin-left:auto;margin-right:auto;}
+  .btn-col .btn-block{max-width:none;}
+  .btn-home{
+    background:linear-gradient(180deg,#eafaf1 0%,var(--panel-2) 55%,#bfe3cd 100%);
+    color:var(--mint);border:2px solid var(--mint);
+    box-shadow:inset 0 2px 2px rgba(255,255,255,.7), inset 0 -7px 10px -5px rgba(63,143,92,.2), 0 8px 16px -8px rgba(63,143,92,.35);
+  }
+  .btn-home:hover{filter:brightness(1.03);}
   .btn-row .btn-block{max-width:none;margin:0;flex:1 1 160px;}
 
   input[type="text"],input[type="number"]{
@@ -1219,7 +1227,7 @@ function goSolveMission1(){
       body:'研發部任務完成！接下來要把配方交給調飲實驗室，準備放大量產。',
       primaryLabel:'前往調飲實驗室 →',
       primaryAction:()=>{ completeMission('m1'); show('screen-dashboard'); setTopbar('辦公桌'); startMission2(); },
-      secondaryLabel:'先回辦公桌',
+      secondaryLabel:'回首頁',
       secondaryAction:()=>{ completeMission('m1'); show('screen-dashboard'); setTopbar('辦公桌'); },
     });
   });
@@ -1330,9 +1338,9 @@ function showSuccess(cfg){
     </div>` : ''}
     ${cfg.extraHtml||''}
     <div class="result-body">${cfg.body}</div>
-    <div class="btn-row" style="width:100%;">
-      ${cfg.secondaryLabel? `<button class="btn btn-ghost btn-block" id="succ-secondary">${cfg.secondaryLabel}</button>`:''}
+    <div class="btn-col" style="width:100%;">
       <button class="btn btn-primary btn-block" id="succ-primary">${cfg.primaryLabel}</button>
+      ${cfg.secondaryLabel? `<button class="btn btn-home btn-block" id="succ-secondary">🏠 ${cfg.secondaryLabel}</button>`:''}
     </div>
   `;
   document.getElementById('succ-primary').onclick = cfg.primaryAction;
@@ -1464,7 +1472,7 @@ function onMission2Done(){
     body:'調飲實驗室任務完成！接下來財務部要幫這杯飲料算成本和定價。',
     primaryLabel:'前往財務部 →',
     primaryAction:()=>{ completeMission('m2'); show('screen-dashboard'); setTopbar('辦公桌'); startMission3(); },
-    secondaryLabel:'先回辦公桌',
+    secondaryLabel:'回首頁',
     secondaryAction:()=>{ completeMission('m2'); show('screen-dashboard'); setTopbar('辦公桌'); },
   });
 }
@@ -1534,7 +1542,7 @@ function confirmPrice(){
     body:`單杯毛利 $${profit}，200 杯共 $${profit*200}。財務部任務完成！接下來輪到行銷部設計廣告。`,
     primaryLabel:'前往行銷部 →',
     primaryAction:()=>{ completeMission('m3'); show('screen-dashboard'); setTopbar('辦公桌'); startMission4(); },
-    secondaryLabel:'先回辦公桌',
+    secondaryLabel:'回首頁',
     secondaryAction:()=>{ completeMission('m3'); show('screen-dashboard'); setTopbar('辦公桌'); },
   });
 }
@@ -1596,7 +1604,7 @@ function confirmAdLayout(){
     body:'接下來可以用 Canva 或 AI 圖像工具，依照這個版面配置完成真正的廣告文宣。行銷部任務完成，準備進入新品發表會！',
     primaryLabel:'前往新品發表會 →',
     primaryAction:()=>{ completeMission('m4'); show('screen-dashboard'); setTopbar('辦公桌'); startMission5(); },
-    secondaryLabel:'先回辦公桌',
+    secondaryLabel:'回首頁',
     secondaryAction:()=>{ completeMission('m4'); show('screen-dashboard'); setTopbar('辦公桌'); },
   });
 }
@@ -1701,7 +1709,7 @@ function finishMission5(){
   showSuccess({
     icon:'🏆', title:'新品發表會成功！', titleClass:'mint',
     body:`${state.company} 的整個新品開發流程完成了——從連比例配方、量產換算、成本定價、廣告版面，到最後自己出題解題。這就是一趟完整的「數學創業模擬」！`,
-    primaryLabel:'回到辦公桌',
+    primaryLabel:'🏠 回首頁',
     primaryAction:()=>{ show('screen-dashboard'); setTopbar('辦公桌'); },
   });
 }

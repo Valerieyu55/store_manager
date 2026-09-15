@@ -1281,21 +1281,9 @@ function correctPuzzleAnswer(cfg){
 function renderPuzzle(){
   const cfg=currentPuzzle, c=document.getElementById('puzzle-container');
   const A=cfg.ratioA, B=cfg.ratioB;
-  const sharedName=A.items[A.sharedIndex];
-  const aVal0=A.vals[0]*mA, aVal1=A.vals[1]*mA;
-  const bVal0=B.vals[0]*mB, bVal1=B.vals[1]*mB;
-  const sharedFromA=A.vals[A.sharedIndex]*mA, sharedFromB=B.vals[B.sharedIndex]*mB;
-  const matched = sharedFromA===sharedFromB;
-  function termHtml(val, idx, side){
+  function termHtml(idx, side){
     const isShared = side==='A'? idx===A.sharedIndex : idx===B.sharedIndex;
-    return `<span class="term ${isShared?'shared':''}">${val}</span>`;
-  }
-  let combinedHtml='';
-  if(matched){
-    const values={};
-    A.items.forEach((n,i)=>{ values[n]=A.vals[i]*mA; });
-    B.items.forEach((n,i)=>{ values[n]=B.vals[i]*mB; });
-    combinedHtml = cfg.finalOrder.map(n=>values[n]).join(' : ');
+    return `<span class="term ${isShared?'shared':''}" id="term-${side}${idx}"></span>`;
   }
   const teacherAnswerHtml = teacherPreviewMode ? `
     <div class="teacher-answer">🧑‍🏫 教師解答：${cfg.finalOrder.join(' : ')} = ${correctPuzzleAnswer(cfg)}</div>
@@ -1305,31 +1293,58 @@ function renderPuzzle(){
     ${teacherAnswerHtml}
     <div class="ratio-card">
       <div class="label">${A.items[0]} : ${A.items[1]}</div>
-      <div class="ratio-line">${termHtml(aVal0,0,'A')}<span class="colon">:</span>${termHtml(aVal1,1,'A')}</div>
+      <div class="ratio-line">${termHtml(0,'A')}<span class="colon">:</span>${termHtml(1,'A')}</div>
       <div class="stepper-row"><span class="stepper-label">放大倍數 ×</span>
-        <input type="number" class="mult-input" min="1" max="9" value="${mA}" oninput="setMult('A',this.value)">
+        <input type="number" class="mult-input" id="mult-A" min="1" max="9" value="${mA}" oninput="setMult('A',this.value)">
       </div>
     </div>
     <div class="ratio-card">
       <div class="label">${B.items[0]} : ${B.items[1]}</div>
-      <div class="ratio-line">${termHtml(bVal0,0,'B')}<span class="colon">:</span>${termHtml(bVal1,1,'B')}</div>
+      <div class="ratio-line">${termHtml(0,'B')}<span class="colon">:</span>${termHtml(1,'B')}</div>
       <div class="stepper-row"><span class="stepper-label">放大倍數 ×</span>
-        <input type="number" class="mult-input" min="1" max="9" value="${mB}" oninput="setMult('B',this.value)">
+        <input type="number" class="mult-input" id="mult-B" min="1" max="9" value="${mB}" oninput="setMult('B',this.value)">
       </div>
     </div>
-    <div class="match-indicator ${matched?'ok':''}">共同項「${sharedName}」— A 邊 = ${sharedFromA}　B 邊 = ${sharedFromB}${matched?'　✓ 一樣大了！':''}</div>
-    <div class="combined-preview ${matched?'show':''}">${combinedHtml}</div>
-    <button class="btn btn-primary btn-block" ${(matched||teacherPreviewMode)?'':'disabled'} onclick="confirmPuzzle()">鎖定黃金連比 →</button>
+    <div class="match-indicator" id="match-indicator"></div>
+    <div class="combined-preview" id="combined-preview"></div>
+    <button class="btn btn-primary btn-block" id="puzzle-confirm-btn" onclick="confirmPuzzle()">鎖定黃金連比 →</button>
   `;
+  updatePuzzleDerived();
+}
+function updatePuzzleDerived(){
+  const cfg=currentPuzzle, A=cfg.ratioA, B=cfg.ratioB;
+  const sharedName=A.items[A.sharedIndex];
+  const aVal0=A.vals[0]*mA, aVal1=A.vals[1]*mA;
+  const bVal0=B.vals[0]*mB, bVal1=B.vals[1]*mB;
+  const sharedFromA=A.vals[A.sharedIndex]*mA, sharedFromB=B.vals[B.sharedIndex]*mB;
+  const matched = sharedFromA===sharedFromB;
+
+  document.getElementById('term-A0').textContent = aVal0;
+  document.getElementById('term-A1').textContent = aVal1;
+  document.getElementById('term-B0').textContent = bVal0;
+  document.getElementById('term-B1').textContent = bVal1;
+
+  let combinedHtml='';
+  if(matched){
+    const values={};
+    A.items.forEach((n,i)=>{ values[n]=A.vals[i]*mA; });
+    B.items.forEach((n,i)=>{ values[n]=B.vals[i]*mB; });
+    combinedHtml = cfg.finalOrder.map(n=>values[n]).join(' : ');
+  }
+  const matchEl = document.getElementById('match-indicator');
+  matchEl.className = 'match-indicator ' + (matched?'ok':'');
+  matchEl.textContent = `共同項「${sharedName}」— A 邊 = ${sharedFromA}　B 邊 = ${sharedFromB}${matched?'　✓ 一樣大了！':''}`;
+
+  const previewEl = document.getElementById('combined-preview');
+  previewEl.className = 'combined-preview ' + (matched?'show':'');
+  previewEl.textContent = combinedHtml;
+
+  document.getElementById('puzzle-confirm-btn').disabled = !(matched||teacherPreviewMode);
 }
 function setMult(side, value){
   const v = Math.min(9, Math.max(1, parseInt(value,10)||1));
   if(side==='A'){ mA=v; } else { mB=v; }
-  renderPuzzle();
-  // keep focus + caret on the field the student is typing in
-  const idx = side==='A' ? 0 : 1;
-  const inputs = document.querySelectorAll('.mult-input');
-  if(inputs[idx]){ inputs[idx].focus(); inputs[idx].select(); }
+  updatePuzzleDerived();
 }
 function confirmPuzzle(){
   const A=currentPuzzle.ratioA, B=currentPuzzle.ratioB;

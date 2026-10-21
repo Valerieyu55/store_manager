@@ -32,3 +32,16 @@
 
 若透過 GitHub Pages 發布，開啟 repo 的 Settings → Pages，
 將來源設為此分支的根目錄，即可取得公開網址。
+
+## 營業版：一杯剛剛好（`cup/`）
+
+`cup/index.html` 是延伸的遊戲化版本，保留上面五個 Mission 的劇情與核心關卡，
+每個部門再加上「營業衝刺」：客人排隊點單、題目隨機生成、星星解鎖下一個部門。
+另有動畫、音樂與音效、設定面板與教師後台。
+
+GitHub Pages 網址：`https://valerieyu55.github.io/store_manager/cup/`
+
+原本的 YOUR TEA COMPANY（根目錄 `index.html`）不受影響。
+
+> 注意：`cup/` 的全班進度回傳使用 Claude 平台的資料庫，只有在 claude.ai 上開啟才會運作；
+> 從 GitHub Pages 開啟時，進度只會存在學生自己的裝置上。
